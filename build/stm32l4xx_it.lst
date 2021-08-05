@@ -1,0 +1,290 @@
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32l4xx_it.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.NMI_Handler,"ax",%progbits
+  18              		.align	1
+  19              		.global	NMI_Handler
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	NMI_Handler:
+  26              	.LFB132:
+  27              		.file 1 "Core/Src/stm32l4xx_it.c"
+   1:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN Header */
+   2:Core/Src/stm32l4xx_it.c **** /**
+   3:Core/Src/stm32l4xx_it.c ****   ******************************************************************************
+   4:Core/Src/stm32l4xx_it.c ****   * @file    stm32l4xx_it.c
+   5:Core/Src/stm32l4xx_it.c ****   * @brief   Interrupt Service Routines.
+   6:Core/Src/stm32l4xx_it.c ****   ******************************************************************************
+   7:Core/Src/stm32l4xx_it.c ****   * @attention
+   8:Core/Src/stm32l4xx_it.c ****   *
+   9:Core/Src/stm32l4xx_it.c ****   * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  10:Core/Src/stm32l4xx_it.c ****   * All rights reserved.</center></h2>
+  11:Core/Src/stm32l4xx_it.c ****   *
+  12:Core/Src/stm32l4xx_it.c ****   * This software component is licensed by ST under Ultimate Liberty license
+  13:Core/Src/stm32l4xx_it.c ****   * SLA0044, the "License"; You may not use this file except in compliance with
+  14:Core/Src/stm32l4xx_it.c ****   * the License. You may obtain a copy of the License at:
+  15:Core/Src/stm32l4xx_it.c ****   *                             www.st.com/SLA0044
+  16:Core/Src/stm32l4xx_it.c ****   *
+  17:Core/Src/stm32l4xx_it.c ****   ******************************************************************************
+  18:Core/Src/stm32l4xx_it.c ****   */
+  19:Core/Src/stm32l4xx_it.c **** /* USER CODE END Header */
+  20:Core/Src/stm32l4xx_it.c **** 
+  21:Core/Src/stm32l4xx_it.c **** /* Includes ------------------------------------------------------------------*/
+  22:Core/Src/stm32l4xx_it.c **** #include "main.h"
+  23:Core/Src/stm32l4xx_it.c **** #include "stm32l4xx_it.h"
+  24:Core/Src/stm32l4xx_it.c **** /* Private includes ----------------------------------------------------------*/
+  25:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN Includes */
+  26:Core/Src/stm32l4xx_it.c **** /* USER CODE END Includes */
+  27:Core/Src/stm32l4xx_it.c **** 
+  28:Core/Src/stm32l4xx_it.c **** /* Private typedef -----------------------------------------------------------*/
+  29:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN TD */
+  30:Core/Src/stm32l4xx_it.c **** 
+  31:Core/Src/stm32l4xx_it.c **** /* USER CODE END TD */
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s 			page 2
+
+
+  32:Core/Src/stm32l4xx_it.c **** 
+  33:Core/Src/stm32l4xx_it.c **** /* Private define ------------------------------------------------------------*/
+  34:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN PD */
+  35:Core/Src/stm32l4xx_it.c **** 
+  36:Core/Src/stm32l4xx_it.c **** /* USER CODE END PD */
+  37:Core/Src/stm32l4xx_it.c **** 
+  38:Core/Src/stm32l4xx_it.c **** /* Private macro -------------------------------------------------------------*/
+  39:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN PM */
+  40:Core/Src/stm32l4xx_it.c **** 
+  41:Core/Src/stm32l4xx_it.c **** /* USER CODE END PM */
+  42:Core/Src/stm32l4xx_it.c **** 
+  43:Core/Src/stm32l4xx_it.c **** /* Private variables ---------------------------------------------------------*/
+  44:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN PV */
+  45:Core/Src/stm32l4xx_it.c **** 
+  46:Core/Src/stm32l4xx_it.c **** /* USER CODE END PV */
+  47:Core/Src/stm32l4xx_it.c **** 
+  48:Core/Src/stm32l4xx_it.c **** /* Private function prototypes -----------------------------------------------*/
+  49:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN PFP */
+  50:Core/Src/stm32l4xx_it.c **** 
+  51:Core/Src/stm32l4xx_it.c **** /* USER CODE END PFP */
+  52:Core/Src/stm32l4xx_it.c **** 
+  53:Core/Src/stm32l4xx_it.c **** /* Private user code ---------------------------------------------------------*/
+  54:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN 0 */
+  55:Core/Src/stm32l4xx_it.c **** 
+  56:Core/Src/stm32l4xx_it.c **** /* USER CODE END 0 */
+  57:Core/Src/stm32l4xx_it.c **** 
+  58:Core/Src/stm32l4xx_it.c **** /* External variables --------------------------------------------------------*/
+  59:Core/Src/stm32l4xx_it.c **** 
+  60:Core/Src/stm32l4xx_it.c **** /* USER CODE BEGIN EV */
+  61:Core/Src/stm32l4xx_it.c **** 
+  62:Core/Src/stm32l4xx_it.c **** /* USER CODE END EV */
+  63:Core/Src/stm32l4xx_it.c **** 
+  64:Core/Src/stm32l4xx_it.c **** /******************************************************************************/
+  65:Core/Src/stm32l4xx_it.c **** /*           Cortex-M4 Processor Interruption and Exception Handlers          */
+  66:Core/Src/stm32l4xx_it.c **** /******************************************************************************/
+  67:Core/Src/stm32l4xx_it.c **** /**
+  68:Core/Src/stm32l4xx_it.c ****   * @brief This function handles Non maskable interrupt.
+  69:Core/Src/stm32l4xx_it.c ****   */
+  70:Core/Src/stm32l4xx_it.c **** void NMI_Handler(void)
+  71:Core/Src/stm32l4xx_it.c **** {
+  28              		.loc 1 71 0
+  29              		.cfi_startproc
+  30              		@ Volatile: function does not return.
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34              	.L2:
+  35 0000 FEE7     		b	.L2
+  36              		.cfi_endproc
+  37              	.LFE132:
+  39              		.section	.text.MemManage_Handler,"ax",%progbits
+  40              		.align	1
+  41              		.global	MemManage_Handler
+  42              		.syntax unified
+  43              		.thumb
+  44              		.thumb_func
+  45              		.fpu fpv4-sp-d16
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s 			page 3
+
+
+  47              	MemManage_Handler:
+  48              	.LFB133:
+  72:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+  73:Core/Src/stm32l4xx_it.c **** 
+  74:Core/Src/stm32l4xx_it.c ****   /* USER CODE END NonMaskableInt_IRQn 0 */
+  75:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
+  76:Core/Src/stm32l4xx_it.c ****   while (1)
+  77:Core/Src/stm32l4xx_it.c ****   {
+  78:Core/Src/stm32l4xx_it.c ****   }
+  79:Core/Src/stm32l4xx_it.c ****   /* USER CODE END NonMaskableInt_IRQn 1 */
+  80:Core/Src/stm32l4xx_it.c **** }
+  81:Core/Src/stm32l4xx_it.c **** 
+  82:Core/Src/stm32l4xx_it.c **** /**
+  83:Core/Src/stm32l4xx_it.c ****   * @brief This function handles Memory management fault.
+  84:Core/Src/stm32l4xx_it.c ****   */
+  85:Core/Src/stm32l4xx_it.c **** void MemManage_Handler(void)
+  86:Core/Src/stm32l4xx_it.c **** {
+  49              		.loc 1 86 0
+  50              		.cfi_startproc
+  51              		@ Volatile: function does not return.
+  52              		@ args = 0, pretend = 0, frame = 0
+  53              		@ frame_needed = 0, uses_anonymous_args = 0
+  54              		@ link register save eliminated.
+  55              	.L4:
+  56 0000 FEE7     		b	.L4
+  57              		.cfi_endproc
+  58              	.LFE133:
+  60              		.section	.text.BusFault_Handler,"ax",%progbits
+  61              		.align	1
+  62              		.global	BusFault_Handler
+  63              		.syntax unified
+  64              		.thumb
+  65              		.thumb_func
+  66              		.fpu fpv4-sp-d16
+  68              	BusFault_Handler:
+  69              	.LFB134:
+  87:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
+  88:Core/Src/stm32l4xx_it.c **** 
+  89:Core/Src/stm32l4xx_it.c ****   /* USER CODE END MemoryManagement_IRQn 0 */
+  90:Core/Src/stm32l4xx_it.c ****   while (1)
+  91:Core/Src/stm32l4xx_it.c ****   {
+  92:Core/Src/stm32l4xx_it.c ****     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+  93:Core/Src/stm32l4xx_it.c ****     /* USER CODE END W1_MemoryManagement_IRQn 0 */
+  94:Core/Src/stm32l4xx_it.c ****   }
+  95:Core/Src/stm32l4xx_it.c **** }
+  96:Core/Src/stm32l4xx_it.c **** 
+  97:Core/Src/stm32l4xx_it.c **** /**
+  98:Core/Src/stm32l4xx_it.c ****   * @brief This function handles Prefetch fault, memory access fault.
+  99:Core/Src/stm32l4xx_it.c ****   */
+ 100:Core/Src/stm32l4xx_it.c **** void BusFault_Handler(void)
+ 101:Core/Src/stm32l4xx_it.c **** {
+  70              		.loc 1 101 0
+  71              		.cfi_startproc
+  72              		@ Volatile: function does not return.
+  73              		@ args = 0, pretend = 0, frame = 0
+  74              		@ frame_needed = 0, uses_anonymous_args = 0
+  75              		@ link register save eliminated.
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s 			page 4
+
+
+  76              	.L6:
+  77 0000 FEE7     		b	.L6
+  78              		.cfi_endproc
+  79              	.LFE134:
+  81              		.section	.text.UsageFault_Handler,"ax",%progbits
+  82              		.align	1
+  83              		.global	UsageFault_Handler
+  84              		.syntax unified
+  85              		.thumb
+  86              		.thumb_func
+  87              		.fpu fpv4-sp-d16
+  89              	UsageFault_Handler:
+  90              	.LFB135:
+ 102:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN BusFault_IRQn 0 */
+ 103:Core/Src/stm32l4xx_it.c **** 
+ 104:Core/Src/stm32l4xx_it.c ****   /* USER CODE END BusFault_IRQn 0 */
+ 105:Core/Src/stm32l4xx_it.c ****   while (1)
+ 106:Core/Src/stm32l4xx_it.c ****   {
+ 107:Core/Src/stm32l4xx_it.c ****     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+ 108:Core/Src/stm32l4xx_it.c ****     /* USER CODE END W1_BusFault_IRQn 0 */
+ 109:Core/Src/stm32l4xx_it.c ****   }
+ 110:Core/Src/stm32l4xx_it.c **** }
+ 111:Core/Src/stm32l4xx_it.c **** 
+ 112:Core/Src/stm32l4xx_it.c **** /**
+ 113:Core/Src/stm32l4xx_it.c ****   * @brief This function handles Undefined instruction or illegal state.
+ 114:Core/Src/stm32l4xx_it.c ****   */
+ 115:Core/Src/stm32l4xx_it.c **** void UsageFault_Handler(void)
+ 116:Core/Src/stm32l4xx_it.c **** {
+  91              		.loc 1 116 0
+  92              		.cfi_startproc
+  93              		@ Volatile: function does not return.
+  94              		@ args = 0, pretend = 0, frame = 0
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96              		@ link register save eliminated.
+  97              	.L8:
+  98 0000 FEE7     		b	.L8
+  99              		.cfi_endproc
+ 100              	.LFE135:
+ 102              		.section	.text.DebugMon_Handler,"ax",%progbits
+ 103              		.align	1
+ 104              		.global	DebugMon_Handler
+ 105              		.syntax unified
+ 106              		.thumb
+ 107              		.thumb_func
+ 108              		.fpu fpv4-sp-d16
+ 110              	DebugMon_Handler:
+ 111              	.LFB136:
+ 117:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN UsageFault_IRQn 0 */
+ 118:Core/Src/stm32l4xx_it.c **** 
+ 119:Core/Src/stm32l4xx_it.c ****   /* USER CODE END UsageFault_IRQn 0 */
+ 120:Core/Src/stm32l4xx_it.c ****   while (1)
+ 121:Core/Src/stm32l4xx_it.c ****   {
+ 122:Core/Src/stm32l4xx_it.c ****     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+ 123:Core/Src/stm32l4xx_it.c ****     /* USER CODE END W1_UsageFault_IRQn 0 */
+ 124:Core/Src/stm32l4xx_it.c ****   }
+ 125:Core/Src/stm32l4xx_it.c **** }
+ 126:Core/Src/stm32l4xx_it.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s 			page 5
+
+
+ 127:Core/Src/stm32l4xx_it.c **** /**
+ 128:Core/Src/stm32l4xx_it.c ****   * @brief This function handles Debug monitor.
+ 129:Core/Src/stm32l4xx_it.c ****   */
+ 130:Core/Src/stm32l4xx_it.c **** void DebugMon_Handler(void)
+ 131:Core/Src/stm32l4xx_it.c **** {
+ 112              		.loc 1 131 0
+ 113              		.cfi_startproc
+ 114              		@ args = 0, pretend = 0, frame = 0
+ 115              		@ frame_needed = 0, uses_anonymous_args = 0
+ 116              		@ link register save eliminated.
+ 132:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
+ 133:Core/Src/stm32l4xx_it.c **** 
+ 134:Core/Src/stm32l4xx_it.c ****   /* USER CODE END DebugMonitor_IRQn 0 */
+ 135:Core/Src/stm32l4xx_it.c ****   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
+ 136:Core/Src/stm32l4xx_it.c **** 
+ 137:Core/Src/stm32l4xx_it.c ****   /* USER CODE END DebugMonitor_IRQn 1 */
+ 138:Core/Src/stm32l4xx_it.c **** }
+ 117              		.loc 1 138 0
+ 118 0000 7047     		bx	lr
+ 119              		.cfi_endproc
+ 120              	.LFE136:
+ 122              		.text
+ 123              	.Letext0:
+ 124              		.file 2 "c:\\st\\stm32cubeide_1.5.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 125              		.file 3 "c:\\st\\stm32cubeide_1.5.0\\stm32cubeide\\plugins\\com.st.stm32cube.ide.mcu.externaltools
+ 126              		.file 4 "Drivers/CMSIS/Include/core_cm4.h"
+ 127              		.file 5 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h"
+ 128              		.file 6 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h"
+ 129              		.file 7 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h"
+ 130              		.file 8 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32l4xx_it.c
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:18     .text.NMI_Handler:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:25     .text.NMI_Handler:0000000000000000 NMI_Handler
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:40     .text.MemManage_Handler:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:47     .text.MemManage_Handler:0000000000000000 MemManage_Handler
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:61     .text.BusFault_Handler:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:68     .text.BusFault_Handler:0000000000000000 BusFault_Handler
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:82     .text.UsageFault_Handler:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:89     .text.UsageFault_Handler:0000000000000000 UsageFault_Handler
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:103    .text.DebugMon_Handler:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccJDJ4ck.s:110    .text.DebugMon_Handler:0000000000000000 DebugMon_Handler
+
+NO UNDEFINED SYMBOLS

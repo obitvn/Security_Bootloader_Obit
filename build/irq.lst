@@ -1,0 +1,263 @@
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"irq.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.rt_interrupt_enter,"ax",%progbits
+  18              		.align	1
+  19              		.global	rt_interrupt_enter
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	rt_interrupt_enter:
+  26              	.LFB15:
+  27              		.file 1 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * 2006-02-24     Bernard      first version
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * 2006-05-03     Bernard      add IRQ_DEBUG
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * 2016-08-09     ArdaFu       add interrupt enter and leave hook.
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** #include <rthw.h>
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** #include <rtthread.h>
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** #ifdef RT_USING_HOOK
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** static void (*rt_interrupt_enter_hook)(void);
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** static void (*rt_interrupt_leave_hook)(void);
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @ingroup Hook
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * This function set a hook function when the system enter a interrupt 
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @note the hook function must be simple and never be blocked or suspend.
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** void rt_interrupt_enter_sethook(void (*hook)(void))
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** {
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_interrupt_enter_hook = hook;
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** }
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s 			page 2
+
+
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @ingroup Hook
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * This function set a hook function when the system exit a interrupt. 
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @note the hook function must be simple and never be blocked or suspend.
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** void rt_interrupt_leave_sethook(void (*hook)(void))
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** {
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_interrupt_leave_hook = hook;
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** }
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** #endif
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /* #define IRQ_DEBUG */
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @addtogroup Kernel
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**@{*/
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** volatile rt_uint8_t rt_interrupt_nest;
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * This function will be invoked by BSP, when enter interrupt service routine
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @note please don't invoke this routine in application
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @see rt_interrupt_leave
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** void rt_interrupt_enter(void)
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** {
+  28              		.loc 1 61 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 08B5     		push	{r3, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 3, -8
+  36              		.cfi_offset 14, -4
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_base_t level;
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     RT_DEBUG_LOG(RT_DEBUG_IRQ, ("irq coming..., irq nest:%d\n",
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****                                 rt_interrupt_nest));
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     level = rt_hw_interrupt_disable();
+  37              		.loc 1 67 0
+  38 0002 FFF7FEFF 		bl	rt_hw_interrupt_disable
+  39              	.LVL0:
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_interrupt_nest ++;
+  40              		.loc 1 68 0
+  41 0006 044A     		ldr	r2, .L3
+  42 0008 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+  43 000a 0133     		adds	r3, r3, #1
+  44 000c DBB2     		uxtb	r3, r3
+  45 000e 1370     		strb	r3, [r2]
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     RT_OBJECT_HOOK_CALL(rt_interrupt_enter_hook,());
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_hw_interrupt_enable(level);
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s 			page 3
+
+
+  46              		.loc 1 70 0
+  47 0010 FFF7FEFF 		bl	rt_hw_interrupt_enable
+  48              	.LVL1:
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** }
+  49              		.loc 1 71 0
+  50 0014 08BD     		pop	{r3, pc}
+  51              	.L4:
+  52 0016 00BF     		.align	2
+  53              	.L3:
+  54 0018 00000000 		.word	rt_interrupt_nest
+  55              		.cfi_endproc
+  56              	.LFE15:
+  58              		.section	.text.rt_interrupt_leave,"ax",%progbits
+  59              		.align	1
+  60              		.global	rt_interrupt_leave
+  61              		.syntax unified
+  62              		.thumb
+  63              		.thumb_func
+  64              		.fpu fpv4-sp-d16
+  66              	rt_interrupt_leave:
+  67              	.LFB16:
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** RTM_EXPORT(rt_interrupt_enter);
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * This function will be invoked by BSP, when leave interrupt service routine
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @note please don't invoke this routine in application
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @see rt_interrupt_enter
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** void rt_interrupt_leave(void)
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** {
+  68              		.loc 1 82 0
+  69              		.cfi_startproc
+  70              		@ args = 0, pretend = 0, frame = 0
+  71              		@ frame_needed = 0, uses_anonymous_args = 0
+  72 0000 08B5     		push	{r3, lr}
+  73              	.LCFI1:
+  74              		.cfi_def_cfa_offset 8
+  75              		.cfi_offset 3, -8
+  76              		.cfi_offset 14, -4
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_base_t level;
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     RT_DEBUG_LOG(RT_DEBUG_IRQ, ("irq leave, irq nest:%d\n",
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****                                 rt_interrupt_nest));
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     level = rt_hw_interrupt_disable();
+  77              		.loc 1 88 0
+  78 0002 FFF7FEFF 		bl	rt_hw_interrupt_disable
+  79              	.LVL2:
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_interrupt_nest --;
+  80              		.loc 1 89 0
+  81 0006 044A     		ldr	r2, .L7
+  82 0008 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+  83 000a 013B     		subs	r3, r3, #1
+  84 000c DBB2     		uxtb	r3, r3
+  85 000e 1370     		strb	r3, [r2]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s 			page 4
+
+
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     RT_OBJECT_HOOK_CALL(rt_interrupt_leave_hook,());
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     rt_hw_interrupt_enable(level);
+  86              		.loc 1 91 0
+  87 0010 FFF7FEFF 		bl	rt_hw_interrupt_enable
+  88              	.LVL3:
+  92:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** }
+  89              		.loc 1 92 0
+  90 0014 08BD     		pop	{r3, pc}
+  91              	.L8:
+  92 0016 00BF     		.align	2
+  93              	.L7:
+  94 0018 00000000 		.word	rt_interrupt_nest
+  95              		.cfi_endproc
+  96              	.LFE16:
+  98              		.section	.text.rt_interrupt_get_nest,"ax",%progbits
+  99              		.align	1
+ 100              		.global	rt_interrupt_get_nest
+ 101              		.syntax unified
+ 102              		.thumb
+ 103              		.thumb_func
+ 104              		.fpu fpv4-sp-d16
+ 106              	rt_interrupt_get_nest:
+ 107              	.LFB17:
+  93:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** RTM_EXPORT(rt_interrupt_leave);
+  94:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** 
+  95:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** /**
+  96:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * This function will return the nest of interrupt.
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+  98:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * User application can invoke this function to get whether current
+  99:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * context is interrupt context.
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  *
+ 101:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  * @return the number of nested interrupts.
+ 102:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****  */
+ 103:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** rt_uint8_t rt_interrupt_get_nest(void)
+ 104:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** {
+ 108              		.loc 1 104 0
+ 109              		.cfi_startproc
+ 110              		@ args = 0, pretend = 0, frame = 0
+ 111              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112              		@ link register save eliminated.
+ 105:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c ****     return rt_interrupt_nest;
+ 113              		.loc 1 105 0
+ 114 0000 014B     		ldr	r3, .L10
+ 115 0002 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 106:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/irq.c **** }
+ 116              		.loc 1 106 0
+ 117 0004 7047     		bx	lr
+ 118              	.L11:
+ 119 0006 00BF     		.align	2
+ 120              	.L10:
+ 121 0008 00000000 		.word	rt_interrupt_nest
+ 122              		.cfi_endproc
+ 123              	.LFE17:
+ 125              		.comm	rt_interrupt_nest,1,1
+ 126              		.text
+ 127              	.Letext0:
+ 128              		.file 2 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtdef.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s 			page 5
+
+
+ 129              		.file 3 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rthw.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 irq.c
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:18     .text.rt_interrupt_enter:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:25     .text.rt_interrupt_enter:0000000000000000 rt_interrupt_enter
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:54     .text.rt_interrupt_enter:0000000000000018 $d
+                            *COM*:0000000000000001 rt_interrupt_nest
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:59     .text.rt_interrupt_leave:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:66     .text.rt_interrupt_leave:0000000000000000 rt_interrupt_leave
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:94     .text.rt_interrupt_leave:0000000000000018 $d
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:99     .text.rt_interrupt_get_nest:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:106    .text.rt_interrupt_get_nest:0000000000000000 rt_interrupt_get_nest
+C:\Users\chuti\AppData\Local\Temp\cc1jkgZp.s:121    .text.rt_interrupt_get_nest:0000000000000008 $d
+
+UNDEFINED SYMBOLS
+rt_hw_interrupt_disable
+rt_hw_interrupt_enable

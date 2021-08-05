@@ -1,0 +1,2450 @@
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"thread.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.rt_thread_exit,"ax",%progbits
+  18              		.align	1
+  19              		.global	rt_thread_exit
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	rt_thread_exit:
+  26              	.LFB15:
+  27              		.file 1 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-03-28     Bernard      first version
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-04-29     Bernard      implement thread timer
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-04-30     Bernard      added THREAD_DEBUG
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-05-27     Bernard      fixed the rt_thread_yield bug
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-06-03     Bernard      fixed the thread timer init bug
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-08-10     Bernard      fixed the timer bug in thread_sleep
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-09-03     Bernard      changed rt_timer_delete to rt_timer_detach
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2006-09-03     Bernard      implement rt_thread_detach
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2008-02-16     Bernard      fixed the rt_thread_timeout bug
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2010-03-21     Bernard      change the errno of rt_thread_delay/sleep to
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *                             RT_EOK.
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2010-11-10     Bernard      add cleanup callback function in thread exit.
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2011-09-01     Bernard      fixed rt_thread_exit issue when the current
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *                             thread preempted, which reported by Jiaxing Lee.
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2011-09-08     Bernard      fixed the scheduling issue in rt_thread_startup.
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2012-12-29     Bernard      fixed compiling warning.
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2016-08-09     ArdaFu       add thread suspend and resume hook.
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * 2017-04-10     armink       fixed the rt_thread_delete and rt_thread_detach
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                bug when thread has not startup.
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #include <rtthread.h>
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #include <rthw.h>
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 2
+
+
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** extern rt_list_t rt_thread_priority_table[RT_THREAD_PRIORITY_MAX];
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** extern struct rt_thread *rt_current_thread;
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** extern rt_list_t rt_thread_defunct;
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #ifdef RT_USING_HOOK
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** static void (*rt_thread_suspend_hook)(rt_thread_t thread);
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** static void (*rt_thread_resume_hook) (rt_thread_t thread);
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** static void (*rt_thread_inited_hook) (rt_thread_t thread);
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @ingroup Hook
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function sets a hook function when the system suspend a thread.
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param hook the specified hook function
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @note the hook function must be simple and never be blocked or suspend.
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** void rt_thread_suspend_sethook(void (*hook)(rt_thread_t thread))
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_thread_suspend_hook = hook;
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @ingroup Hook
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function sets a hook function when the system resume a thread.
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param hook the specified hook function
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @note the hook function must be simple and never be blocked or suspend.
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** void rt_thread_resume_sethook(void (*hook)(rt_thread_t thread))
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_thread_resume_hook = hook;
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @ingroup Hook
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function sets a hook function when a thread is initialized.
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param hook the specified hook function
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** void rt_thread_inited_sethook(void (*hook)(rt_thread_t thread))
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_thread_inited_hook = hook;
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** void rt_thread_exit(void)
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+  28              		.loc 1 82 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 38B5     		push	{r3, r4, r5, lr}
+  33              	.LCFI0:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 3
+
+
+  34              		.cfi_def_cfa_offset 16
+  35              		.cfi_offset 3, -16
+  36              		.cfi_offset 4, -12
+  37              		.cfi_offset 5, -8
+  38              		.cfi_offset 14, -4
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_thread *thread;
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t level;
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* get current thread */
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread = rt_current_thread;
+  39              		.loc 1 87 0
+  40 0002 144B     		ldr	r3, .L6
+  41 0004 1C68     		ldr	r4, [r3]
+  42              	.LVL0:
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* disable interrupt */
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     level = rt_hw_interrupt_disable();
+  43              		.loc 1 90 0
+  44 0006 FFF7FEFF 		bl	rt_hw_interrupt_disable
+  45              	.LVL1:
+  46 000a 0546     		mov	r5, r0
+  47              	.LVL2:
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  92:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* remove from schedule */
+  93:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule_remove_thread(thread);
+  48              		.loc 1 93 0
+  49 000c 2046     		mov	r0, r4
+  50              	.LVL3:
+  51 000e FFF7FEFF 		bl	rt_schedule_remove_thread
+  52              	.LVL4:
+  94:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* change stat */
+  95:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stat = RT_THREAD_CLOSE;
+  53              		.loc 1 95 0
+  54 0012 0423     		movs	r3, #4
+  55 0014 84F83430 		strb	r3, [r4, #52]
+  96:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* remove it from timer list */
+  98:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_detach(&thread->thread_timer);
+  56              		.loc 1 98 0
+  57 0018 04F14400 		add	r0, r4, #68
+  58 001c FFF7FEFF 		bl	rt_timer_detach
+  59              	.LVL5:
+  99:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((rt_object_is_systemobject((rt_object_t)thread) == RT_TRUE) &&
+  60              		.loc 1 100 0
+  61 0020 2046     		mov	r0, r4
+  62 0022 FFF7FEFF 		bl	rt_object_is_systemobject
+  63              	.LVL6:
+  64 0026 0128     		cmp	r0, #1
+  65 0028 0DD0     		beq	.L5
+  66              	.L2:
+ 101:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->cleanup == RT_NULL)
+ 102:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 103:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_object_detach((rt_object_t)thread);
+ 104:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 105:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     else
+ 106:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 4
+
+
+ 107:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* insert to defunct thread list */
+ 108:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_list_insert_after(&rt_thread_defunct, &(thread->tlist));
+  67              		.loc 1 108 0
+  68 002a 04F11402 		add	r2, r4, #20
+  69              	.LVL7:
+  70              	.LBB18:
+  71              	.LBB19:
+  72              		.file 2 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2006-03-16     Bernard      the first version
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2006-09-07     Bernard      move the kservice APIs to rtthread.h
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2007-06-27     Bernard      fix the rt_list_remove bug
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2012-03-22     Bernard      rename kservice.h to rtservice.h
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2017-11-15     JasonJia     Modify rt_slist_foreach to rt_slist_for_each_entry.
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *                             Make code cleanup.
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #ifndef __RT_SERVICE_H__
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #define __RT_SERVICE_H__
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #ifdef __cplusplus
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** extern "C" {
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #endif
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @addtogroup KernelService
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**@{*/
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * rt_container_of - return the member address of ptr, if the type of ptr is the
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * struct type.
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #define rt_container_of(ptr, type, member) \
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief initialize a list object
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #define RT_LIST_OBJECT_INIT(object) { &(object), &(object) }
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief initialize a list
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l list to be initialized
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_init(rt_list_t *l)
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->next = l->prev = l;
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 5
+
+
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief insert a node after a list
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l list to insert it
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param n new node to be inserted
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_insert_after(rt_list_t *l, rt_list_t *n)
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->next->prev = n;
+  73              		.loc 2 60 0
+  74 002e 0A4B     		ldr	r3, .L6+4
+  75 0030 1968     		ldr	r1, [r3]
+  76 0032 4A60     		str	r2, [r1, #4]
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l->next;
+  77              		.loc 2 61 0
+  78 0034 6161     		str	r1, [r4, #20]
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->next = n;
+  79              		.loc 2 63 0
+  80 0036 1A60     		str	r2, [r3]
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l;
+  81              		.loc 2 64 0
+  82 0038 A361     		str	r3, [r4, #24]
+  83              	.LVL8:
+  84              	.L3:
+  85              	.LBE19:
+  86              	.LBE18:
+ 109:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 110:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 111:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enable interrupt */
+ 112:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_hw_interrupt_enable(level);
+  87              		.loc 1 112 0
+  88 003a 2846     		mov	r0, r5
+  89 003c FFF7FEFF 		bl	rt_hw_interrupt_enable
+  90              	.LVL9:
+ 113:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 114:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* switch to next task */
+ 115:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule();
+  91              		.loc 1 115 0
+  92 0040 FFF7FEFF 		bl	rt_schedule
+  93              	.LVL10:
+ 116:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+  94              		.loc 1 116 0
+  95 0044 38BD     		pop	{r3, r4, r5, pc}
+  96              	.LVL11:
+  97              	.L5:
+ 101:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+  98              		.loc 1 101 0 discriminator 1
+  99 0046 236F     		ldr	r3, [r4, #112]
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->cleanup == RT_NULL)
+ 100              		.loc 1 100 0 discriminator 1
+ 101 0048 002B     		cmp	r3, #0
+ 102 004a EED1     		bne	.L2
+ 103:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 103              		.loc 1 103 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 6
+
+
+ 104 004c 2046     		mov	r0, r4
+ 105 004e FFF7FEFF 		bl	rt_object_detach
+ 106              	.LVL12:
+ 107 0052 F2E7     		b	.L3
+ 108              	.L7:
+ 109              		.align	2
+ 110              	.L6:
+ 111 0054 00000000 		.word	rt_current_thread
+ 112 0058 00000000 		.word	rt_thread_defunct
+ 113              		.cfi_endproc
+ 114              	.LFE15:
+ 116              		.section	.text._rt_thread_init,"ax",%progbits
+ 117              		.align	1
+ 118              		.syntax unified
+ 119              		.thumb
+ 120              		.thumb_func
+ 121              		.fpu fpv4-sp-d16
+ 123              	_rt_thread_init:
+ 124              	.LFB16:
+ 117:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 118:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** static rt_err_t _rt_thread_init(struct rt_thread *thread,
+ 119:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 const char       *name,
+ 120:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 void (*entry)(void *parameter),
+ 121:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 void             *parameter,
+ 122:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 void             *stack_start,
+ 123:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 rt_uint32_t       stack_size,
+ 124:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 rt_uint8_t        priority,
+ 125:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                 rt_uint32_t       tick)
+ 126:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 125              		.loc 1 126 0
+ 126              		.cfi_startproc
+ 127              		@ args = 16, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129              	.LVL13:
+ 130 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 131              	.LCFI1:
+ 132              		.cfi_def_cfa_offset 20
+ 133              		.cfi_offset 4, -20
+ 134              		.cfi_offset 5, -16
+ 135              		.cfi_offset 6, -12
+ 136              		.cfi_offset 7, -8
+ 137              		.cfi_offset 14, -4
+ 138 0002 83B0     		sub	sp, sp, #12
+ 139              	.LCFI2:
+ 140              		.cfi_def_cfa_offset 32
+ 141 0004 0446     		mov	r4, r0
+ 142 0006 0898     		ldr	r0, [sp, #32]
+ 143              	.LVL14:
+ 144 0008 0999     		ldr	r1, [sp, #36]
+ 145              	.LVL15:
+ 146 000a 9DF82850 		ldrb	r5, [sp, #40]	@ zero_extendqisi2
+ 147 000e 0B9E     		ldr	r6, [sp, #44]
+ 127:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* init thread list */
+ 128:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_list_init(&(thread->tlist));
+ 148              		.loc 1 128 0
+ 149 0010 04F11407 		add	r7, r4, #20
+ 150              	.LVL16:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 7
+
+
+ 151              	.LBB20:
+ 152              	.LBB21:
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 153              		.loc 2 49 0
+ 154 0014 A761     		str	r7, [r4, #24]
+ 155 0016 6761     		str	r7, [r4, #20]
+ 156              	.LVL17:
+ 157              	.LBE21:
+ 158              	.LBE20:
+ 129:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 130:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->entry = (void *)entry;
+ 159              		.loc 1 130 0
+ 160 0018 2262     		str	r2, [r4, #32]
+ 131:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->parameter = parameter;
+ 161              		.loc 1 131 0
+ 162 001a 6362     		str	r3, [r4, #36]
+ 132:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 133:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* stack init */
+ 134:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stack_addr = stack_start;
+ 163              		.loc 1 134 0
+ 164 001c A062     		str	r0, [r4, #40]
+ 135:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stack_size = stack_size;
+ 165              		.loc 1 135 0
+ 166 001e E162     		str	r1, [r4, #44]
+ 136:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 137:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* init thread stack */
+ 138:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_memset(thread->stack_addr, '#', thread->stack_size);
+ 167              		.loc 1 138 0
+ 168 0020 0A46     		mov	r2, r1
+ 169              	.LVL18:
+ 170 0022 2321     		movs	r1, #35
+ 171 0024 FFF7FEFF 		bl	rt_memset
+ 172              	.LVL19:
+ 139:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #ifdef ARCH_CPU_STACK_GROWS_UPWARD
+ 140:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->sp = (void *)rt_hw_stack_init(thread->entry, thread->parameter,
+ 141:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                           (void *)((char *)thread->stack_addr),
+ 142:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                           (void *)rt_thread_exit);
+ 143:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #else
+ 144:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->sp = (void *)rt_hw_stack_init(thread->entry, thread->parameter,
+ 145:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                           (void *)((char *)thread->stack_addr + thread->stack_size 
+ 173              		.loc 1 145 0
+ 174 0028 A16A     		ldr	r1, [r4, #40]
+ 175 002a E36A     		ldr	r3, [r4, #44]
+ 176 002c 1A1F     		subs	r2, r3, #4
+ 144:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                           (void *)((char *)thread->stack_addr + thread->stack_size 
+ 177              		.loc 1 144 0
+ 178 002e 104B     		ldr	r3, .L10
+ 179 0030 0A44     		add	r2, r2, r1
+ 180 0032 616A     		ldr	r1, [r4, #36]
+ 181 0034 206A     		ldr	r0, [r4, #32]
+ 182 0036 FFF7FEFF 		bl	rt_hw_stack_init
+ 183              	.LVL20:
+ 184 003a E061     		str	r0, [r4, #28]
+ 146:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                           (void *)rt_thread_exit);
+ 147:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 148:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 149:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* priority init */
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 8
+
+
+ 150:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(priority < RT_THREAD_PRIORITY_MAX);
+ 151:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->init_priority    = priority;
+ 185              		.loc 1 151 0
+ 186 003c 84F83650 		strb	r5, [r4, #54]
+ 152:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->current_priority = priority;
+ 187              		.loc 1 152 0
+ 188 0040 84F83550 		strb	r5, [r4, #53]
+ 153:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 154:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->number_mask = 0;
+ 189              		.loc 1 154 0
+ 190 0044 0025     		movs	r5, #0
+ 191 0046 A563     		str	r5, [r4, #56]
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #if RT_THREAD_PRIORITY_MAX > 32
+ 156:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->number = 0;
+ 157:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->high_mask = 0;
+ 158:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 159:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 160:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* tick init */
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->init_tick      = tick;
+ 192              		.loc 1 161 0
+ 193 0048 E663     		str	r6, [r4, #60]
+ 162:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->remaining_tick = tick;
+ 194              		.loc 1 162 0
+ 195 004a 2664     		str	r6, [r4, #64]
+ 163:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* error and flags */
+ 165:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->error = RT_EOK;
+ 196              		.loc 1 165 0
+ 197 004c 2563     		str	r5, [r4, #48]
+ 166:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stat  = RT_THREAD_INIT;
+ 198              		.loc 1 166 0
+ 199 004e 84F83450 		strb	r5, [r4, #52]
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 168:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* initialize cleanup function and user data */
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->cleanup   = 0;
+ 200              		.loc 1 169 0
+ 201 0052 2567     		str	r5, [r4, #112]
+ 170:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->user_data = 0;
+ 202              		.loc 1 170 0
+ 203 0054 6567     		str	r5, [r4, #116]
+ 171:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 172:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* init thread timer */
+ 173:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_init(&(thread->thread_timer),
+ 204              		.loc 1 173 0
+ 205 0056 0195     		str	r5, [sp, #4]
+ 206 0058 0095     		str	r5, [sp]
+ 207 005a 2346     		mov	r3, r4
+ 208 005c 054A     		ldr	r2, .L10+4
+ 209 005e 2146     		mov	r1, r4
+ 210 0060 04F14400 		add	r0, r4, #68
+ 211 0064 FFF7FEFF 		bl	rt_timer_init
+ 212              	.LVL21:
+ 174:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                   thread->name,
+ 175:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                   rt_thread_timeout,
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                   thread,
+ 177:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                   0,
+ 178:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                   RT_TIMER_FLAG_ONE_SHOT);
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 9
+
+
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 180:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* initialize signal */
+ 181:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #ifdef RT_USING_SIGNALS
+ 182:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->sig_mask    = 0x00;
+ 183:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->sig_pending = 0x00;
+ 184:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 185:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->sig_ret     = RT_NULL;
+ 186:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->sig_vectors = RT_NULL;
+ 187:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->si_list     = RT_NULL;
+ 188:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 189:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 190:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #ifdef RT_USING_LWP
+ 191:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->lwp = RT_NULL;
+ 192:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 193:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 194:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_OBJECT_HOOK_CALL(rt_thread_inited_hook, (thread));
+ 195:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 196:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 197:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 213              		.loc 1 197 0
+ 214 0068 2846     		mov	r0, r5
+ 215 006a 03B0     		add	sp, sp, #12
+ 216              	.LCFI3:
+ 217              		.cfi_def_cfa_offset 20
+ 218              		@ sp needed
+ 219 006c F0BD     		pop	{r4, r5, r6, r7, pc}
+ 220              	.LVL22:
+ 221              	.L11:
+ 222 006e 00BF     		.align	2
+ 223              	.L10:
+ 224 0070 00000000 		.word	rt_thread_exit
+ 225 0074 00000000 		.word	rt_thread_timeout
+ 226              		.cfi_endproc
+ 227              	.LFE16:
+ 229              		.section	.text.rt_thread_timeout,"ax",%progbits
+ 230              		.align	1
+ 231              		.global	rt_thread_timeout
+ 232              		.syntax unified
+ 233              		.thumb
+ 234              		.thumb_func
+ 235              		.fpu fpv4-sp-d16
+ 237              	rt_thread_timeout:
+ 238              	.LFB30:
+ 198:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 199:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 200:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @addtogroup Thread
+ 201:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 202:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 203:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**@{*/
+ 204:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 205:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 206:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will initialize a thread, normally it's used to initialize a
+ 207:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * static thread object.
+ 208:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 209:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the static thread object
+ 210:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param name the name of thread, which shall be unique
+ 211:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param entry the entry function of thread
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 10
+
+
+ 212:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param parameter the parameter of thread enter function
+ 213:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param stack_start the start address of thread stack
+ 214:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param stack_size the size of thread stack
+ 215:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param priority the priority of thread
+ 216:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param tick the time slice if there are same priority thread
+ 217:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 218:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the operation status, RT_EOK on OK, -RT_ERROR on error
+ 219:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 220:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_init(struct rt_thread *thread,
+ 221:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         const char       *name,
+ 222:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         void (*entry)(void *parameter),
+ 223:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         void             *parameter,
+ 224:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         void             *stack_start,
+ 225:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         rt_uint32_t       stack_size,
+ 226:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         rt_uint8_t        priority,
+ 227:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                         rt_uint32_t       tick)
+ 228:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 229:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 230:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 231:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(stack_start != RT_NULL);
+ 232:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 233:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* init thread object */
+ 234:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_object_init((rt_object_t)thread, RT_Object_Class_Thread, name);
+ 235:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 236:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return _rt_thread_init(thread,
+ 237:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            name,
+ 238:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            entry,
+ 239:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            parameter,
+ 240:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            stack_start,
+ 241:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            stack_size,
+ 242:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            priority,
+ 243:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            tick);
+ 244:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 245:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_init);
+ 246:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 247:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 248:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will return self thread object
+ 249:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 250:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the self thread object
+ 251:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 252:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_thread_t rt_thread_self(void)
+ 253:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 254:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return rt_current_thread;
+ 255:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 256:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_self);
+ 257:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 258:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 259:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will start a thread and put it to system ready queue
+ 260:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 261:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the thread to be started
+ 262:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 263:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the operation status, RT_EOK on OK, -RT_ERROR on error
+ 264:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 265:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_startup(rt_thread_t thread)
+ 266:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 267:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 268:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 11
+
+
+ 269:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_INIT);
+ 270:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 271:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 272:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* set current priority to init priority */
+ 273:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->current_priority = thread->init_priority;
+ 274:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 275:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* calculate priority attribute */
+ 276:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #if RT_THREAD_PRIORITY_MAX > 32
+ 277:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->number      = thread->current_priority >> 3;            /* 5bit */
+ 278:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->number_mask = 1L << thread->number;
+ 279:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->high_mask   = 1L << (thread->current_priority & 0x07);  /* 3bit */
+ 280:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #else
+ 281:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->number_mask = 1L << thread->current_priority;
+ 282:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 283:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 284:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_DEBUG_LOG(RT_DEBUG_THREAD, ("startup a thread:%s with priority:%d\n",
+ 285:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                    thread->name, thread->init_priority));
+ 286:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* change thread stat */
+ 287:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stat = RT_THREAD_SUSPEND;
+ 288:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* then resume it */
+ 289:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_thread_resume(thread);
+ 290:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (rt_thread_self() != RT_NULL)
+ 291:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 292:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* do a scheduling */
+ 293:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_schedule();
+ 294:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 295:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 296:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 297:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 298:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_startup);
+ 299:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 300:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 301:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will detach a thread. The thread object will be removed from
+ 302:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * thread queue and detached/deleted from system object management.
+ 303:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 304:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the thread to be deleted
+ 305:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 306:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the operation status, RT_EOK on OK, -RT_ERROR on error
+ 307:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 308:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_detach(rt_thread_t thread)
+ 309:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 310:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_base_t lock;
+ 311:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 312:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 313:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 314:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 315:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_is_systemobject((rt_object_t)thread));
+ 316:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 317:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((thread->stat & RT_THREAD_STAT_MASK) != RT_THREAD_INIT)
+ 318:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 319:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* remove from schedule */
+ 320:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_schedule_remove_thread(thread);
+ 321:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 322:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 323:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* release thread timer */
+ 324:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_detach(&(thread->thread_timer));
+ 325:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 12
+
+
+ 326:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* change stat */
+ 327:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stat = RT_THREAD_CLOSE;
+ 328:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((rt_object_is_systemobject((rt_object_t)thread) == RT_TRUE) &&
+ 330:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->cleanup == RT_NULL)
+ 331:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 332:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_object_detach((rt_object_t)thread);
+ 333:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 334:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     else
+ 335:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 336:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* disable interrupt */
+ 337:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         lock = rt_hw_interrupt_disable();
+ 338:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* insert to defunct thread list */
+ 339:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_list_insert_after(&rt_thread_defunct, &(thread->tlist));
+ 340:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* enable interrupt */
+ 341:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_hw_interrupt_enable(lock);
+ 342:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 343:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 344:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 345:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 346:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_detach);
+ 347:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 348:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #ifdef RT_USING_HEAP
+ 349:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 350:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will create a thread object and allocate thread object memory
+ 351:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * and stack.
+ 352:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 353:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param name the name of thread, which shall be unique
+ 354:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param entry the entry function of thread
+ 355:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param parameter the parameter of thread enter function
+ 356:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param stack_size the size of thread stack
+ 357:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param priority the priority of thread
+ 358:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param tick the time slice if there are same priority thread
+ 359:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 360:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the created thread object
+ 361:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 362:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_thread_t rt_thread_create(const char *name,
+ 363:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                              void (*entry)(void *parameter),
+ 364:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                              void       *parameter,
+ 365:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                              rt_uint32_t stack_size,
+ 366:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                              rt_uint8_t  priority,
+ 367:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                              rt_uint32_t tick)
+ 368:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 369:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_thread *thread;
+ 370:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     void *stack_start;
+ 371:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 372:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread = (struct rt_thread *)rt_object_allocate(RT_Object_Class_Thread,
+ 373:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                                     name);
+ 374:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (thread == RT_NULL)
+ 375:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return RT_NULL;
+ 376:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 377:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     stack_start = (void *)RT_KERNEL_MALLOC(stack_size);
+ 378:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (stack_start == RT_NULL)
+ 379:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 380:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* allocate stack failure */
+ 381:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_object_delete((rt_object_t)thread);
+ 382:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 13
+
+
+ 383:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return RT_NULL;
+ 384:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 385:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 386:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     _rt_thread_init(thread,
+ 387:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     name,
+ 388:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     entry,
+ 389:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     parameter,
+ 390:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     stack_start,
+ 391:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     stack_size,
+ 392:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     priority,
+ 393:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     tick);
+ 394:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 395:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return thread;
+ 396:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 397:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_create);
+ 398:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 399:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 400:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will delete a thread. The thread object will be removed from
+ 401:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * thread queue and deleted from system object management in the idle thread.
+ 402:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 403:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the thread to be deleted
+ 404:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 405:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the operation status, RT_EOK on OK, -RT_ERROR on error
+ 406:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 407:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_delete(rt_thread_t thread)
+ 408:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 409:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_base_t lock;
+ 410:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 411:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 412:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 413:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 414:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_is_systemobject((rt_object_t)thread) == RT_FALSE);
+ 415:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 416:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((thread->stat & RT_THREAD_STAT_MASK) != RT_THREAD_INIT)
+ 417:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 418:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* remove from schedule */
+ 419:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_schedule_remove_thread(thread);
+ 420:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 421:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 422:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* release thread timer */
+ 423:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_detach(&(thread->thread_timer));
+ 424:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 425:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* change stat */
+ 426:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stat = RT_THREAD_CLOSE;
+ 427:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 428:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* disable interrupt */
+ 429:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     lock = rt_hw_interrupt_disable();
+ 430:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 431:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* insert to defunct thread list */
+ 432:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_list_insert_after(&rt_thread_defunct, &(thread->tlist));
+ 433:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 434:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enable interrupt */
+ 435:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_hw_interrupt_enable(lock);
+ 436:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 437:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 438:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 439:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_delete);
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 14
+
+
+ 440:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 441:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 442:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 443:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will let current thread yield processor, and scheduler will
+ 444:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * choose a highest thread to run. After yield processor, the current thread
+ 445:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * is still in READY state.
+ 446:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 447:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return RT_EOK
+ 448:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 449:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_yield(void)
+ 450:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 451:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t level;
+ 452:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_thread *thread;
+ 453:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 454:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* disable interrupt */
+ 455:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     level = rt_hw_interrupt_disable();
+ 456:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 457:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* set to current thread */
+ 458:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread = rt_current_thread;
+ 459:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 460:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* if the thread stat is READY and on ready queue list */
+ 461:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_READY &&
+ 462:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->tlist.next != thread->tlist.prev)
+ 463:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 464:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* remove thread from thread list */
+ 465:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_list_remove(&(thread->tlist));
+ 466:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 467:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* put thread to end of ready queue */
+ 468:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_list_insert_before(&(rt_thread_priority_table[thread->current_priority]),
+ 469:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                               &(thread->tlist));
+ 470:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 471:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* enable interrupt */
+ 472:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_hw_interrupt_enable(level);
+ 473:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 474:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_schedule();
+ 475:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 476:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return RT_EOK;
+ 477:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 478:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 479:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enable interrupt */
+ 480:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_hw_interrupt_enable(level);
+ 481:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 482:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 483:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 484:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_yield);
+ 485:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 486:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 487:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will let current thread sleep for some ticks.
+ 488:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 489:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param tick the sleep ticks
+ 490:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 491:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return RT_EOK
+ 492:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 493:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_sleep(rt_tick_t tick)
+ 494:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 495:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 496:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_thread *thread;
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 15
+
+
+ 497:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 498:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* disable interrupt */
+ 499:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     temp = rt_hw_interrupt_disable();
+ 500:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* set to current thread */
+ 501:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread = rt_current_thread;
+ 502:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 503:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 504:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 505:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* suspend thread */
+ 506:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_thread_suspend(thread);
+ 507:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 508:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* reset the timeout of thread timer and start it */
+ 509:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_control(&(thread->thread_timer), RT_TIMER_CTRL_SET_TIME, &tick);
+ 510:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_start(&(thread->thread_timer));
+ 511:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 512:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enable interrupt */
+ 513:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_hw_interrupt_enable(temp);
+ 514:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 515:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule();
+ 516:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 517:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* clear error number of this thread to RT_EOK */
+ 518:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (thread->error == -RT_ETIMEOUT)
+ 519:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->error = RT_EOK;
+ 520:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 521:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 522:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 523:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 524:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 525:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will let current thread delay for some ticks.
+ 526:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 527:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param tick the delay ticks
+ 528:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 529:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return RT_EOK
+ 530:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 531:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_delay(rt_tick_t tick)
+ 532:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 533:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return rt_thread_sleep(tick);
+ 534:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 535:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_delay);
+ 536:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 537:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 538:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will let current thread delay for some milliseconds.
+ 539:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 540:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param tick the delay time
+ 541:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 542:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return RT_EOK
+ 543:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 544:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_mdelay(rt_int32_t ms)
+ 545:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 546:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_tick_t tick;
+ 547:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 548:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     tick = rt_tick_from_millisecond(ms);
+ 549:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 550:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return rt_thread_sleep(tick);
+ 551:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 552:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_mdelay);
+ 553:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 16
+
+
+ 554:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 555:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will control thread behaviors according to control command.
+ 556:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 557:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the specified thread to be controlled
+ 558:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param cmd the control command, which includes
+ 559:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *  RT_THREAD_CTRL_CHANGE_PRIORITY for changing priority level of thread;
+ 560:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *  RT_THREAD_CTRL_STARTUP for starting a thread;
+ 561:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *  RT_THREAD_CTRL_CLOSE for delete a thread.
+ 562:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param arg the argument of control command
+ 563:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 564:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return RT_EOK
+ 565:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 566:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_control(rt_thread_t thread, int cmd, void *arg)
+ 567:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 568:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 569:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 570:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 571:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 572:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 573:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 574:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     switch (cmd)
+ 575:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 576:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     case RT_THREAD_CTRL_CHANGE_PRIORITY:
+ 577:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* disable interrupt */
+ 578:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         temp = rt_hw_interrupt_disable();
+ 579:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 580:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* for ready thread, change queue */
+ 581:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         if ((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_READY)
+ 582:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         {
+ 583:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             /* remove thread from schedule queue first */
+ 584:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             rt_schedule_remove_thread(thread);
+ 585:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 586:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             /* change thread priority */
+ 587:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->current_priority = *(rt_uint8_t *)arg;
+ 588:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 589:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             /* recalculate priority attribute */
+ 590:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #if RT_THREAD_PRIORITY_MAX > 32
+ 591:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->number      = thread->current_priority >> 3;            /* 5bit */
+ 592:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->number_mask = 1 << thread->number;
+ 593:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->high_mask   = 1 << (thread->current_priority & 0x07);   /* 3bit */
+ 594:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #else
+ 595:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->number_mask = 1 << thread->current_priority;
+ 596:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 597:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 598:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             /* insert thread to schedule queue again */
+ 599:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             rt_schedule_insert_thread(thread);
+ 600:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         }
+ 601:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         else
+ 602:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         {
+ 603:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->current_priority = *(rt_uint8_t *)arg;
+ 604:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 605:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             /* recalculate priority attribute */
+ 606:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #if RT_THREAD_PRIORITY_MAX > 32
+ 607:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->number      = thread->current_priority >> 3;            /* 5bit */
+ 608:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->number_mask = 1 << thread->number;
+ 609:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->high_mask   = 1 << (thread->current_priority & 0x07);   /* 3bit */
+ 610:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #else
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 17
+
+
+ 611:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             thread->number_mask = 1 << thread->current_priority;
+ 612:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 613:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         }
+ 614:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 615:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* enable interrupt */
+ 616:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_hw_interrupt_enable(temp);
+ 617:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         break;
+ 618:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 619:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     case RT_THREAD_CTRL_STARTUP:
+ 620:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return rt_thread_startup(thread);
+ 621:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 622:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #ifdef RT_USING_HEAP
+ 623:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     case RT_THREAD_CTRL_CLOSE:
+ 624:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return rt_thread_delete(thread);
+ 625:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 626:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 627:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     default:
+ 628:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         break;
+ 629:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 630:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 631:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 632:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 633:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_control);
+ 634:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 635:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 636:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will suspend the specified thread.
+ 637:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 638:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the thread to be suspended
+ 639:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 640:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the operation status, RT_EOK on OK, -RT_ERROR on error
+ 641:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 642:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @note if suspend self thread, after this function call, the
+ 643:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * rt_schedule() must be invoked.
+ 644:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 645:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_suspend(rt_thread_t thread)
+ 646:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 647:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 648:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 649:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 650:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 651:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 652:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 653:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_DEBUG_LOG(RT_DEBUG_THREAD, ("thread suspend:  %s\n", thread->name));
+ 654:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 655:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((thread->stat & RT_THREAD_STAT_MASK) != RT_THREAD_READY)
+ 656:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 657:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         RT_DEBUG_LOG(RT_DEBUG_THREAD, ("thread suspend: thread disorder, 0x%2x\n",
+ 658:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                        thread->stat));
+ 659:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 660:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return -RT_ERROR;
+ 661:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 662:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 663:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* disable interrupt */
+ 664:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     temp = rt_hw_interrupt_disable();
+ 665:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 666:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* change thread stat */
+ 667:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->stat = RT_THREAD_SUSPEND | (thread->stat & ~RT_THREAD_STAT_MASK);
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 18
+
+
+ 668:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule_remove_thread(thread);
+ 669:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 670:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* stop thread timer anyway */
+ 671:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_stop(&(thread->thread_timer));
+ 672:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 673:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enable interrupt */
+ 674:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_hw_interrupt_enable(temp);
+ 675:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 676:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_OBJECT_HOOK_CALL(rt_thread_suspend_hook, (thread));
+ 677:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 678:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 679:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_suspend);
+ 680:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 681:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 682:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will resume a thread and put it to system ready queue.
+ 683:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 684:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param thread the thread to be resumed
+ 685:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 686:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the operation status, RT_EOK on OK, -RT_ERROR on error
+ 687:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 688:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_err_t rt_thread_resume(rt_thread_t thread)
+ 689:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 690:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 691:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 692:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 693:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 694:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 695:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 696:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_DEBUG_LOG(RT_DEBUG_THREAD, ("thread resume:  %s\n", thread->name));
+ 697:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 698:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if ((thread->stat & RT_THREAD_STAT_MASK) != RT_THREAD_SUSPEND)
+ 699:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 700:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         RT_DEBUG_LOG(RT_DEBUG_THREAD, ("thread resume: thread disorder, %d\n",
+ 701:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                        thread->stat));
+ 702:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 703:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return -RT_ERROR;
+ 704:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 705:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 706:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* disable interrupt */
+ 707:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     temp = rt_hw_interrupt_disable();
+ 708:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 709:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* remove from suspend list */
+ 710:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_list_remove(&(thread->tlist));
+ 711:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 712:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_stop(&thread->thread_timer);
+ 713:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 714:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enable interrupt */
+ 715:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_hw_interrupt_enable(temp);
+ 716:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 717:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* insert to schedule ready list */
+ 718:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule_insert_thread(thread);
+ 719:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 720:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_OBJECT_HOOK_CALL(rt_thread_resume_hook, (thread));
+ 721:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_EOK;
+ 722:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 723:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_resume);
+ 724:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 19
+
+
+ 725:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 726:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function is the timeout function for thread, normally which is invoked
+ 727:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * when thread is timeout to wait some resource.
+ 728:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 729:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param parameter the parameter of thread timeout function
+ 730:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 731:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** void rt_thread_timeout(void *parameter)
+ 732:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 239              		.loc 1 732 0
+ 240              		.cfi_startproc
+ 241              		@ args = 0, pretend = 0, frame = 0
+ 242              		@ frame_needed = 0, uses_anonymous_args = 0
+ 243              	.LVL23:
+ 244 0000 10B5     		push	{r4, lr}
+ 245              	.LCFI4:
+ 246              		.cfi_def_cfa_offset 8
+ 247              		.cfi_offset 4, -8
+ 248              		.cfi_offset 14, -4
+ 249              	.LVL24:
+ 733:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_thread *thread;
+ 734:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 735:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread = (struct rt_thread *)parameter;
+ 736:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 737:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 738:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 739:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_SUSPEND);
+ 740:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(rt_object_get_type((rt_object_t)thread) == RT_Object_Class_Thread);
+ 741:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 742:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* set error number */
+ 743:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     thread->error = -RT_ETIMEOUT;
+ 250              		.loc 1 743 0
+ 251 0002 6FF00102 		mvn	r2, #1
+ 252 0006 0263     		str	r2, [r0, #48]
+ 744:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 745:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* remove from suspend list */
+ 746:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_list_remove(&(thread->tlist));
+ 253              		.loc 1 746 0
+ 254 0008 00F11402 		add	r2, r0, #20
+ 255              	.LVL25:
+ 256              	.LBB22:
+ 257              	.LBB23:
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief insert a node before a list
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param n new node to be inserted
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l list to insert it
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_insert_before(rt_list_t *l, rt_list_t *n)
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->prev->next = n;
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l->prev;
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->prev = n;
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l;
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 20
+
+
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief remove node from list.
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param n the node to remove from the list.
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_remove(rt_list_t *n)
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next->prev = n->prev;
+ 258              		.loc 2 88 0
+ 259 000c 4169     		ldr	r1, [r0, #20]
+ 260 000e 8469     		ldr	r4, [r0, #24]
+ 261 0010 4C60     		str	r4, [r1, #4]
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev->next = n->next;
+ 262              		.loc 2 89 0
+ 263 0012 8169     		ldr	r1, [r0, #24]
+ 264 0014 4469     		ldr	r4, [r0, #20]
+ 265 0016 0C60     		str	r4, [r1]
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = n->prev = n;
+ 266              		.loc 2 91 0
+ 267 0018 8261     		str	r2, [r0, #24]
+ 268 001a 4261     		str	r2, [r0, #20]
+ 269              	.LVL26:
+ 270              	.LBE23:
+ 271              	.LBE22:
+ 747:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 748:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* insert to schedule ready list */
+ 749:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule_insert_thread(thread);
+ 272              		.loc 1 749 0
+ 273 001c FFF7FEFF 		bl	rt_schedule_insert_thread
+ 274              	.LVL27:
+ 750:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 751:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* do schedule */
+ 752:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule();
+ 275              		.loc 1 752 0
+ 276 0020 FFF7FEFF 		bl	rt_schedule
+ 277              	.LVL28:
+ 753:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 278              		.loc 1 753 0
+ 279 0024 10BD     		pop	{r4, pc}
+ 280              		.cfi_endproc
+ 281              	.LFE30:
+ 283              		.section	.text.rt_thread_init,"ax",%progbits
+ 284              		.align	1
+ 285              		.global	rt_thread_init
+ 286              		.syntax unified
+ 287              		.thumb
+ 288              		.thumb_func
+ 289              		.fpu fpv4-sp-d16
+ 291              	rt_thread_init:
+ 292              	.LFB17:
+ 228:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 293              		.loc 1 228 0
+ 294              		.cfi_startproc
+ 295              		@ args = 16, pretend = 0, frame = 0
+ 296              		@ frame_needed = 0, uses_anonymous_args = 0
+ 297              	.LVL29:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 21
+
+
+ 298 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 299              	.LCFI5:
+ 300              		.cfi_def_cfa_offset 20
+ 301              		.cfi_offset 4, -20
+ 302              		.cfi_offset 5, -16
+ 303              		.cfi_offset 6, -12
+ 304              		.cfi_offset 7, -8
+ 305              		.cfi_offset 14, -4
+ 306 0002 85B0     		sub	sp, sp, #20
+ 307              	.LCFI6:
+ 308              		.cfi_def_cfa_offset 40
+ 309 0004 0546     		mov	r5, r0
+ 310 0006 0C46     		mov	r4, r1
+ 311 0008 1646     		mov	r6, r2
+ 312 000a 1F46     		mov	r7, r3
+ 234:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 313              		.loc 1 234 0
+ 314 000c 0A46     		mov	r2, r1
+ 315              	.LVL30:
+ 316 000e 0121     		movs	r1, #1
+ 317              	.LVL31:
+ 318 0010 FFF7FEFF 		bl	rt_object_init
+ 319              	.LVL32:
+ 236:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                            name,
+ 320              		.loc 1 236 0
+ 321 0014 0D9B     		ldr	r3, [sp, #52]
+ 322 0016 0393     		str	r3, [sp, #12]
+ 323 0018 9DF83030 		ldrb	r3, [sp, #48]	@ zero_extendqisi2
+ 324 001c 0293     		str	r3, [sp, #8]
+ 325 001e 0B9B     		ldr	r3, [sp, #44]
+ 326 0020 0193     		str	r3, [sp, #4]
+ 327 0022 0A9B     		ldr	r3, [sp, #40]
+ 328 0024 0093     		str	r3, [sp]
+ 329 0026 3B46     		mov	r3, r7
+ 330 0028 3246     		mov	r2, r6
+ 331 002a 2146     		mov	r1, r4
+ 332 002c 2846     		mov	r0, r5
+ 333 002e FFF7FEFF 		bl	_rt_thread_init
+ 334              	.LVL33:
+ 244:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_init);
+ 335              		.loc 1 244 0
+ 336 0032 05B0     		add	sp, sp, #20
+ 337              	.LCFI7:
+ 338              		.cfi_def_cfa_offset 20
+ 339              		@ sp needed
+ 340 0034 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 341              		.cfi_endproc
+ 342              	.LFE17:
+ 344              		.section	.text.rt_thread_self,"ax",%progbits
+ 345              		.align	1
+ 346              		.global	rt_thread_self
+ 347              		.syntax unified
+ 348              		.thumb
+ 349              		.thumb_func
+ 350              		.fpu fpv4-sp-d16
+ 352              	rt_thread_self:
+ 353              	.LFB18:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 22
+
+
+ 253:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return rt_current_thread;
+ 354              		.loc 1 253 0
+ 355              		.cfi_startproc
+ 356              		@ args = 0, pretend = 0, frame = 0
+ 357              		@ frame_needed = 0, uses_anonymous_args = 0
+ 358              		@ link register save eliminated.
+ 255:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_self);
+ 359              		.loc 1 255 0
+ 360 0000 014B     		ldr	r3, .L17
+ 361 0002 1868     		ldr	r0, [r3]
+ 362 0004 7047     		bx	lr
+ 363              	.L18:
+ 364 0006 00BF     		.align	2
+ 365              	.L17:
+ 366 0008 00000000 		.word	rt_current_thread
+ 367              		.cfi_endproc
+ 368              	.LFE18:
+ 370              		.section	.text.rt_thread_detach,"ax",%progbits
+ 371              		.align	1
+ 372              		.global	rt_thread_detach
+ 373              		.syntax unified
+ 374              		.thumb
+ 375              		.thumb_func
+ 376              		.fpu fpv4-sp-d16
+ 378              	rt_thread_detach:
+ 379              	.LFB20:
+ 309:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_base_t lock;
+ 380              		.loc 1 309 0
+ 381              		.cfi_startproc
+ 382              		@ args = 0, pretend = 0, frame = 0
+ 383              		@ frame_needed = 0, uses_anonymous_args = 0
+ 384              	.LVL34:
+ 385 0000 10B5     		push	{r4, lr}
+ 386              	.LCFI8:
+ 387              		.cfi_def_cfa_offset 8
+ 388              		.cfi_offset 4, -8
+ 389              		.cfi_offset 14, -4
+ 390 0002 0446     		mov	r4, r0
+ 317:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 391              		.loc 1 317 0
+ 392 0004 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 393 0008 13F00F0F 		tst	r3, #15
+ 394 000c 1BD1     		bne	.L24
+ 395              	.LVL35:
+ 396              	.L20:
+ 324:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 397              		.loc 1 324 0
+ 398 000e 04F14400 		add	r0, r4, #68
+ 399 0012 FFF7FEFF 		bl	rt_timer_detach
+ 400              	.LVL36:
+ 327:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 401              		.loc 1 327 0
+ 402 0016 0423     		movs	r3, #4
+ 403 0018 84F83430 		strb	r3, [r4, #52]
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->cleanup == RT_NULL)
+ 404              		.loc 1 329 0
+ 405 001c 2046     		mov	r0, r4
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 23
+
+
+ 406 001e FFF7FEFF 		bl	rt_object_is_systemobject
+ 407              	.LVL37:
+ 408 0022 0128     		cmp	r0, #1
+ 409 0024 01D1     		bne	.L21
+ 330:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 410              		.loc 1 330 0 discriminator 1
+ 411 0026 236F     		ldr	r3, [r4, #112]
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->cleanup == RT_NULL)
+ 412              		.loc 1 329 0 discriminator 1
+ 413 0028 83B1     		cbz	r3, .L25
+ 414              	.L21:
+ 337:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* insert to defunct thread list */
+ 415              		.loc 1 337 0
+ 416 002a FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 417              	.LVL38:
+ 339:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         /* enable interrupt */
+ 418              		.loc 1 339 0
+ 419 002e 04F11402 		add	r2, r4, #20
+ 420              	.LVL39:
+ 421              	.LBB24:
+ 422              	.LBB25:
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l->next;
+ 423              		.loc 2 60 0
+ 424 0032 084B     		ldr	r3, .L26
+ 425 0034 1968     		ldr	r1, [r3]
+ 426 0036 4A60     		str	r2, [r1, #4]
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 427              		.loc 2 61 0
+ 428 0038 6161     		str	r1, [r4, #20]
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l;
+ 429              		.loc 2 63 0
+ 430 003a 1A60     		str	r2, [r3]
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 431              		.loc 2 64 0
+ 432 003c A361     		str	r3, [r4, #24]
+ 433              	.LVL40:
+ 434              	.LBE25:
+ 435              	.LBE24:
+ 341:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 436              		.loc 1 341 0
+ 437 003e FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 438              	.LVL41:
+ 439              	.L22:
+ 345:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_detach);
+ 440              		.loc 1 345 0
+ 441 0042 0020     		movs	r0, #0
+ 442 0044 10BD     		pop	{r4, pc}
+ 443              	.LVL42:
+ 444              	.L24:
+ 320:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 445              		.loc 1 320 0
+ 446 0046 FFF7FEFF 		bl	rt_schedule_remove_thread
+ 447              	.LVL43:
+ 448 004a E0E7     		b	.L20
+ 449              	.L25:
+ 332:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 450              		.loc 1 332 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 24
+
+
+ 451 004c 2046     		mov	r0, r4
+ 452 004e FFF7FEFF 		bl	rt_object_detach
+ 453              	.LVL44:
+ 454 0052 F6E7     		b	.L22
+ 455              	.L27:
+ 456              		.align	2
+ 457              	.L26:
+ 458 0054 00000000 		.word	rt_thread_defunct
+ 459              		.cfi_endproc
+ 460              	.LFE20:
+ 462              		.section	.text.rt_thread_create,"ax",%progbits
+ 463              		.align	1
+ 464              		.global	rt_thread_create
+ 465              		.syntax unified
+ 466              		.thumb
+ 467              		.thumb_func
+ 468              		.fpu fpv4-sp-d16
+ 470              	rt_thread_create:
+ 471              	.LFB21:
+ 368:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_thread *thread;
+ 472              		.loc 1 368 0
+ 473              		.cfi_startproc
+ 474              		@ args = 8, pretend = 0, frame = 0
+ 475              		@ frame_needed = 0, uses_anonymous_args = 0
+ 476              	.LVL45:
+ 477 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 478              	.LCFI9:
+ 479              		.cfi_def_cfa_offset 24
+ 480              		.cfi_offset 4, -24
+ 481              		.cfi_offset 5, -20
+ 482              		.cfi_offset 6, -16
+ 483              		.cfi_offset 7, -12
+ 484              		.cfi_offset 8, -8
+ 485              		.cfi_offset 14, -4
+ 486 0004 84B0     		sub	sp, sp, #16
+ 487              	.LCFI10:
+ 488              		.cfi_def_cfa_offset 40
+ 489 0006 0546     		mov	r5, r0
+ 490 0008 0F46     		mov	r7, r1
+ 491 000a 9046     		mov	r8, r2
+ 492 000c 1E46     		mov	r6, r3
+ 372:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                                                     name);
+ 493              		.loc 1 372 0
+ 494 000e 0146     		mov	r1, r0
+ 495              	.LVL46:
+ 496 0010 0120     		movs	r0, #1
+ 497              	.LVL47:
+ 498 0012 FFF7FEFF 		bl	rt_object_allocate
+ 499              	.LVL48:
+ 374:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         return RT_NULL;
+ 500              		.loc 1 374 0
+ 501 0016 D0B1     		cbz	r0, .L31
+ 502 0018 0446     		mov	r4, r0
+ 377:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (stack_start == RT_NULL)
+ 503              		.loc 1 377 0
+ 504 001a 3046     		mov	r0, r6
+ 505              	.LVL49:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 25
+
+
+ 506 001c FFF7FEFF 		bl	rt_malloc
+ 507              	.LVL50:
+ 378:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 508              		.loc 1 378 0
+ 509 0020 80B1     		cbz	r0, .L33
+ 386:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                     name,
+ 510              		.loc 1 386 0
+ 511 0022 0B9A     		ldr	r2, [sp, #44]
+ 512 0024 0392     		str	r2, [sp, #12]
+ 513 0026 9DF82820 		ldrb	r2, [sp, #40]	@ zero_extendqisi2
+ 514 002a 0292     		str	r2, [sp, #8]
+ 515 002c 0196     		str	r6, [sp, #4]
+ 516 002e 0090     		str	r0, [sp]
+ 517 0030 4346     		mov	r3, r8
+ 518 0032 3A46     		mov	r2, r7
+ 519 0034 2946     		mov	r1, r5
+ 520 0036 2046     		mov	r0, r4
+ 521              	.LVL51:
+ 522 0038 FFF7FEFF 		bl	_rt_thread_init
+ 523              	.LVL52:
+ 524              	.L28:
+ 396:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_create);
+ 525              		.loc 1 396 0
+ 526 003c 2046     		mov	r0, r4
+ 527 003e 04B0     		add	sp, sp, #16
+ 528              	.LCFI11:
+ 529              		.cfi_remember_state
+ 530              		.cfi_def_cfa_offset 24
+ 531              		@ sp needed
+ 532 0040 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 533              	.LVL53:
+ 534              	.L33:
+ 535              	.LCFI12:
+ 536              		.cfi_restore_state
+ 381:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 537              		.loc 1 381 0
+ 538 0044 2046     		mov	r0, r4
+ 539              	.LVL54:
+ 540 0046 FFF7FEFF 		bl	rt_object_delete
+ 541              	.LVL55:
+ 383:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 542              		.loc 1 383 0
+ 543 004a 0024     		movs	r4, #0
+ 544              	.LVL56:
+ 545 004c F6E7     		b	.L28
+ 546              	.LVL57:
+ 547              	.L31:
+ 375:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 548              		.loc 1 375 0
+ 549 004e 0024     		movs	r4, #0
+ 550 0050 F4E7     		b	.L28
+ 551              		.cfi_endproc
+ 552              	.LFE21:
+ 554              		.section	.text.rt_thread_delete,"ax",%progbits
+ 555              		.align	1
+ 556              		.global	rt_thread_delete
+ 557              		.syntax unified
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 26
+
+
+ 558              		.thumb
+ 559              		.thumb_func
+ 560              		.fpu fpv4-sp-d16
+ 562              	rt_thread_delete:
+ 563              	.LFB22:
+ 408:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_base_t lock;
+ 564              		.loc 1 408 0
+ 565              		.cfi_startproc
+ 566              		@ args = 0, pretend = 0, frame = 0
+ 567              		@ frame_needed = 0, uses_anonymous_args = 0
+ 568              	.LVL58:
+ 569 0000 10B5     		push	{r4, lr}
+ 570              	.LCFI13:
+ 571              		.cfi_def_cfa_offset 8
+ 572              		.cfi_offset 4, -8
+ 573              		.cfi_offset 14, -4
+ 574 0002 0446     		mov	r4, r0
+ 416:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 575              		.loc 1 416 0
+ 576 0004 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 577 0008 13F00F0F 		tst	r3, #15
+ 578 000c 14D1     		bne	.L37
+ 579              	.LVL59:
+ 580              	.L35:
+ 423:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 581              		.loc 1 423 0
+ 582 000e 04F14400 		add	r0, r4, #68
+ 583 0012 FFF7FEFF 		bl	rt_timer_detach
+ 584              	.LVL60:
+ 426:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 585              		.loc 1 426 0
+ 586 0016 0423     		movs	r3, #4
+ 587 0018 84F83430 		strb	r3, [r4, #52]
+ 429:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 588              		.loc 1 429 0
+ 589 001c FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 590              	.LVL61:
+ 432:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 591              		.loc 1 432 0
+ 592 0020 04F11402 		add	r2, r4, #20
+ 593              	.LVL62:
+ 594              	.LBB26:
+ 595              	.LBB27:
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l->next;
+ 596              		.loc 2 60 0
+ 597 0024 064B     		ldr	r3, .L38
+ 598 0026 1968     		ldr	r1, [r3]
+ 599 0028 4A60     		str	r2, [r1, #4]
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 600              		.loc 2 61 0
+ 601 002a 6161     		str	r1, [r4, #20]
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l;
+ 602              		.loc 2 63 0
+ 603 002c 1A60     		str	r2, [r3]
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 604              		.loc 2 64 0
+ 605 002e A361     		str	r3, [r4, #24]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 27
+
+
+ 606              	.LVL63:
+ 607              	.LBE27:
+ 608              	.LBE26:
+ 435:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 609              		.loc 1 435 0
+ 610 0030 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 611              	.LVL64:
+ 438:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_delete);
+ 612              		.loc 1 438 0
+ 613 0034 0020     		movs	r0, #0
+ 614 0036 10BD     		pop	{r4, pc}
+ 615              	.LVL65:
+ 616              	.L37:
+ 419:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 617              		.loc 1 419 0
+ 618 0038 FFF7FEFF 		bl	rt_schedule_remove_thread
+ 619              	.LVL66:
+ 620 003c E7E7     		b	.L35
+ 621              	.L39:
+ 622 003e 00BF     		.align	2
+ 623              	.L38:
+ 624 0040 00000000 		.word	rt_thread_defunct
+ 625              		.cfi_endproc
+ 626              	.LFE22:
+ 628              		.section	.text.rt_thread_yield,"ax",%progbits
+ 629              		.align	1
+ 630              		.global	rt_thread_yield
+ 631              		.syntax unified
+ 632              		.thumb
+ 633              		.thumb_func
+ 634              		.fpu fpv4-sp-d16
+ 636              	rt_thread_yield:
+ 637              	.LFB23:
+ 450:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t level;
+ 638              		.loc 1 450 0
+ 639              		.cfi_startproc
+ 640              		@ args = 0, pretend = 0, frame = 0
+ 641              		@ frame_needed = 0, uses_anonymous_args = 0
+ 642 0000 10B5     		push	{r4, lr}
+ 643              	.LCFI14:
+ 644              		.cfi_def_cfa_offset 8
+ 645              		.cfi_offset 4, -8
+ 646              		.cfi_offset 14, -4
+ 455:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 647              		.loc 1 455 0
+ 648 0002 FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 649              	.LVL67:
+ 458:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 650              		.loc 1 458 0
+ 651 0006 144B     		ldr	r3, .L45
+ 652 0008 1B68     		ldr	r3, [r3]
+ 653              	.LVL68:
+ 461:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->tlist.next != thread->tlist.prev)
+ 654              		.loc 1 461 0
+ 655 000a 93F83420 		ldrb	r2, [r3, #52]	@ zero_extendqisi2
+ 656 000e 02F00F02 		and	r2, r2, #15
+ 657 0012 012A     		cmp	r2, #1
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 28
+
+
+ 658 0014 03D1     		bne	.L41
+ 462:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 659              		.loc 1 462 0 discriminator 1
+ 660 0016 5A69     		ldr	r2, [r3, #20]
+ 661 0018 9969     		ldr	r1, [r3, #24]
+ 461:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->tlist.next != thread->tlist.prev)
+ 662              		.loc 1 461 0 discriminator 1
+ 663 001a 8A42     		cmp	r2, r1
+ 664 001c 03D1     		bne	.L44
+ 665              	.L41:
+ 480:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 666              		.loc 1 480 0
+ 667 001e FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 668              	.LVL69:
+ 669              	.L42:
+ 483:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_yield);
+ 670              		.loc 1 483 0
+ 671 0022 0020     		movs	r0, #0
+ 672 0024 10BD     		pop	{r4, pc}
+ 673              	.LVL70:
+ 674              	.L44:
+ 465:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 675              		.loc 1 465 0
+ 676 0026 03F11404 		add	r4, r3, #20
+ 677              	.LVL71:
+ 678              	.LBB28:
+ 679              	.LBB29:
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev->next = n->next;
+ 680              		.loc 2 88 0
+ 681 002a 5160     		str	r1, [r2, #4]
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 682              		.loc 2 89 0
+ 683 002c 9A69     		ldr	r2, [r3, #24]
+ 684 002e 5969     		ldr	r1, [r3, #20]
+ 685 0030 1160     		str	r1, [r2]
+ 686              		.loc 2 91 0
+ 687 0032 9C61     		str	r4, [r3, #24]
+ 688 0034 5C61     		str	r4, [r3, #20]
+ 689              	.LVL72:
+ 690              	.LBE29:
+ 691              	.LBE28:
+ 468:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                               &(thread->tlist));
+ 692              		.loc 1 468 0
+ 693 0036 93F83510 		ldrb	r1, [r3, #53]	@ zero_extendqisi2
+ 694 003a 084A     		ldr	r2, .L45+4
+ 695 003c 02EBC102 		add	r2, r2, r1, lsl #3
+ 696              	.LVL73:
+ 697              	.LBB30:
+ 698              	.LBB31:
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l->prev;
+ 699              		.loc 2 75 0
+ 700 0040 5168     		ldr	r1, [r2, #4]
+ 701 0042 0C60     		str	r4, [r1]
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 702              		.loc 2 76 0
+ 703 0044 5168     		ldr	r1, [r2, #4]
+ 704 0046 9961     		str	r1, [r3, #24]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 29
+
+
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l;
+ 705              		.loc 2 78 0
+ 706 0048 5460     		str	r4, [r2, #4]
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 707              		.loc 2 79 0
+ 708 004a 5A61     		str	r2, [r3, #20]
+ 709              	.LVL74:
+ 710              	.LBE31:
+ 711              	.LBE30:
+ 472:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 712              		.loc 1 472 0
+ 713 004c FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 714              	.LVL75:
+ 474:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 715              		.loc 1 474 0
+ 716 0050 FFF7FEFF 		bl	rt_schedule
+ 717              	.LVL76:
+ 476:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 718              		.loc 1 476 0
+ 719 0054 E5E7     		b	.L42
+ 720              	.L46:
+ 721 0056 00BF     		.align	2
+ 722              	.L45:
+ 723 0058 00000000 		.word	rt_current_thread
+ 724 005c 00000000 		.word	rt_thread_priority_table
+ 725              		.cfi_endproc
+ 726              	.LFE23:
+ 728              		.section	.text.rt_thread_suspend,"ax",%progbits
+ 729              		.align	1
+ 730              		.global	rt_thread_suspend
+ 731              		.syntax unified
+ 732              		.thumb
+ 733              		.thumb_func
+ 734              		.fpu fpv4-sp-d16
+ 736              	rt_thread_suspend:
+ 737              	.LFB28:
+ 646:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 738              		.loc 1 646 0
+ 739              		.cfi_startproc
+ 740              		@ args = 0, pretend = 0, frame = 0
+ 741              		@ frame_needed = 0, uses_anonymous_args = 0
+ 742              	.LVL77:
+ 743 0000 38B5     		push	{r3, r4, r5, lr}
+ 744              	.LCFI15:
+ 745              		.cfi_def_cfa_offset 16
+ 746              		.cfi_offset 3, -16
+ 747              		.cfi_offset 4, -12
+ 748              		.cfi_offset 5, -8
+ 749              		.cfi_offset 14, -4
+ 655:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 750              		.loc 1 655 0
+ 751 0002 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 752 0006 03F00F03 		and	r3, r3, #15
+ 753 000a 012B     		cmp	r3, #1
+ 754 000c 17D1     		bne	.L49
+ 755 000e 0446     		mov	r4, r0
+ 664:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 30
+
+
+ 756              		.loc 1 664 0
+ 757 0010 FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 758              	.LVL78:
+ 759 0014 0546     		mov	r5, r0
+ 760              	.LVL79:
+ 667:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_schedule_remove_thread(thread);
+ 761              		.loc 1 667 0
+ 762 0016 94F93430 		ldrsb	r3, [r4, #52]
+ 763 001a 23F00F03 		bic	r3, r3, #15
+ 764 001e 43F00203 		orr	r3, r3, #2
+ 765 0022 84F83430 		strb	r3, [r4, #52]
+ 668:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 766              		.loc 1 668 0
+ 767 0026 2046     		mov	r0, r4
+ 768              	.LVL80:
+ 769 0028 FFF7FEFF 		bl	rt_schedule_remove_thread
+ 770              	.LVL81:
+ 671:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 771              		.loc 1 671 0
+ 772 002c 04F14400 		add	r0, r4, #68
+ 773 0030 FFF7FEFF 		bl	rt_timer_stop
+ 774              	.LVL82:
+ 674:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 775              		.loc 1 674 0
+ 776 0034 2846     		mov	r0, r5
+ 777 0036 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 778              	.LVL83:
+ 677:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 779              		.loc 1 677 0
+ 780 003a 0020     		movs	r0, #0
+ 781              	.LVL84:
+ 782              	.L47:
+ 678:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_suspend);
+ 783              		.loc 1 678 0
+ 784 003c 38BD     		pop	{r3, r4, r5, pc}
+ 785              	.LVL85:
+ 786              	.L49:
+ 660:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 787              		.loc 1 660 0
+ 788 003e 4FF0FF30 		mov	r0, #-1
+ 789              	.LVL86:
+ 790 0042 FBE7     		b	.L47
+ 791              		.cfi_endproc
+ 792              	.LFE28:
+ 794              		.section	.text.rt_thread_sleep,"ax",%progbits
+ 795              		.align	1
+ 796              		.global	rt_thread_sleep
+ 797              		.syntax unified
+ 798              		.thumb
+ 799              		.thumb_func
+ 800              		.fpu fpv4-sp-d16
+ 802              	rt_thread_sleep:
+ 803              	.LFB24:
+ 494:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 804              		.loc 1 494 0
+ 805              		.cfi_startproc
+ 806              		@ args = 0, pretend = 0, frame = 8
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 31
+
+
+ 807              		@ frame_needed = 0, uses_anonymous_args = 0
+ 808              	.LVL87:
+ 809 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 810              	.LCFI16:
+ 811              		.cfi_def_cfa_offset 20
+ 812              		.cfi_offset 4, -20
+ 813              		.cfi_offset 5, -16
+ 814              		.cfi_offset 6, -12
+ 815              		.cfi_offset 7, -8
+ 816              		.cfi_offset 14, -4
+ 817 0002 83B0     		sub	sp, sp, #12
+ 818              	.LCFI17:
+ 819              		.cfi_def_cfa_offset 32
+ 820 0004 02AD     		add	r5, sp, #8
+ 821 0006 45F8040D 		str	r0, [r5, #-4]!
+ 499:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* set to current thread */
+ 822              		.loc 1 499 0
+ 823 000a FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 824              	.LVL88:
+ 825 000e 0746     		mov	r7, r0
+ 826              	.LVL89:
+ 501:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(thread != RT_NULL);
+ 827              		.loc 1 501 0
+ 828 0010 0E4B     		ldr	r3, .L55
+ 829 0012 1C68     		ldr	r4, [r3]
+ 830              	.LVL90:
+ 506:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 831              		.loc 1 506 0
+ 832 0014 2046     		mov	r0, r4
+ 833              	.LVL91:
+ 834 0016 FFF7FEFF 		bl	rt_thread_suspend
+ 835              	.LVL92:
+ 509:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_timer_start(&(thread->thread_timer));
+ 836              		.loc 1 509 0
+ 837 001a 04F14406 		add	r6, r4, #68
+ 838 001e 2A46     		mov	r2, r5
+ 839 0020 0021     		movs	r1, #0
+ 840 0022 3046     		mov	r0, r6
+ 841 0024 FFF7FEFF 		bl	rt_timer_control
+ 842              	.LVL93:
+ 510:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 843              		.loc 1 510 0
+ 844 0028 3046     		mov	r0, r6
+ 845 002a FFF7FEFF 		bl	rt_timer_start
+ 846              	.LVL94:
+ 513:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 847              		.loc 1 513 0
+ 848 002e 3846     		mov	r0, r7
+ 849 0030 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 850              	.LVL95:
+ 515:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 851              		.loc 1 515 0
+ 852 0034 FFF7FEFF 		bl	rt_schedule
+ 853              	.LVL96:
+ 518:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         thread->error = RT_EOK;
+ 854              		.loc 1 518 0
+ 855 0038 236B     		ldr	r3, [r4, #48]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 32
+
+
+ 856 003a 13F1020F 		cmn	r3, #2
+ 857 003e 02D0     		beq	.L54
+ 858              	.L52:
+ 522:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 859              		.loc 1 522 0
+ 860 0040 0020     		movs	r0, #0
+ 861 0042 03B0     		add	sp, sp, #12
+ 862              	.LCFI18:
+ 863              		.cfi_remember_state
+ 864              		.cfi_def_cfa_offset 20
+ 865              		@ sp needed
+ 866 0044 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 867              	.LVL97:
+ 868              	.L54:
+ 869              	.LCFI19:
+ 870              		.cfi_restore_state
+ 519:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 871              		.loc 1 519 0
+ 872 0046 0023     		movs	r3, #0
+ 873 0048 2363     		str	r3, [r4, #48]
+ 874 004a F9E7     		b	.L52
+ 875              	.L56:
+ 876              		.align	2
+ 877              	.L55:
+ 878 004c 00000000 		.word	rt_current_thread
+ 879              		.cfi_endproc
+ 880              	.LFE24:
+ 882              		.section	.text.rt_thread_delay,"ax",%progbits
+ 883              		.align	1
+ 884              		.global	rt_thread_delay
+ 885              		.syntax unified
+ 886              		.thumb
+ 887              		.thumb_func
+ 888              		.fpu fpv4-sp-d16
+ 890              	rt_thread_delay:
+ 891              	.LFB25:
+ 532:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return rt_thread_sleep(tick);
+ 892              		.loc 1 532 0
+ 893              		.cfi_startproc
+ 894              		@ args = 0, pretend = 0, frame = 0
+ 895              		@ frame_needed = 0, uses_anonymous_args = 0
+ 896              	.LVL98:
+ 897 0000 08B5     		push	{r3, lr}
+ 898              	.LCFI20:
+ 899              		.cfi_def_cfa_offset 8
+ 900              		.cfi_offset 3, -8
+ 901              		.cfi_offset 14, -4
+ 533:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 902              		.loc 1 533 0
+ 903 0002 FFF7FEFF 		bl	rt_thread_sleep
+ 904              	.LVL99:
+ 534:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_delay);
+ 905              		.loc 1 534 0
+ 906 0006 08BD     		pop	{r3, pc}
+ 907              		.cfi_endproc
+ 908              	.LFE25:
+ 910              		.section	.text.rt_thread_mdelay,"ax",%progbits
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 33
+
+
+ 911              		.align	1
+ 912              		.global	rt_thread_mdelay
+ 913              		.syntax unified
+ 914              		.thumb
+ 915              		.thumb_func
+ 916              		.fpu fpv4-sp-d16
+ 918              	rt_thread_mdelay:
+ 919              	.LFB26:
+ 545:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     rt_tick_t tick;
+ 920              		.loc 1 545 0
+ 921              		.cfi_startproc
+ 922              		@ args = 0, pretend = 0, frame = 0
+ 923              		@ frame_needed = 0, uses_anonymous_args = 0
+ 924              	.LVL100:
+ 925 0000 08B5     		push	{r3, lr}
+ 926              	.LCFI21:
+ 927              		.cfi_def_cfa_offset 8
+ 928              		.cfi_offset 3, -8
+ 929              		.cfi_offset 14, -4
+ 548:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 930              		.loc 1 548 0
+ 931 0002 FFF7FEFF 		bl	rt_tick_from_millisecond
+ 932              	.LVL101:
+ 550:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 933              		.loc 1 550 0
+ 934 0006 FFF7FEFF 		bl	rt_thread_sleep
+ 935              	.LVL102:
+ 551:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_mdelay);
+ 936              		.loc 1 551 0
+ 937 000a 08BD     		pop	{r3, pc}
+ 938              		.cfi_endproc
+ 939              	.LFE26:
+ 941              		.section	.text.rt_thread_resume,"ax",%progbits
+ 942              		.align	1
+ 943              		.global	rt_thread_resume
+ 944              		.syntax unified
+ 945              		.thumb
+ 946              		.thumb_func
+ 947              		.fpu fpv4-sp-d16
+ 949              	rt_thread_resume:
+ 950              	.LFB29:
+ 689:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 951              		.loc 1 689 0
+ 952              		.cfi_startproc
+ 953              		@ args = 0, pretend = 0, frame = 0
+ 954              		@ frame_needed = 0, uses_anonymous_args = 0
+ 955              	.LVL103:
+ 956 0000 38B5     		push	{r3, r4, r5, lr}
+ 957              	.LCFI22:
+ 958              		.cfi_def_cfa_offset 16
+ 959              		.cfi_offset 3, -16
+ 960              		.cfi_offset 4, -12
+ 961              		.cfi_offset 5, -8
+ 962              		.cfi_offset 14, -4
+ 698:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 963              		.loc 1 698 0
+ 964 0002 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 34
+
+
+ 965 0006 03F00F03 		and	r3, r3, #15
+ 966 000a 022B     		cmp	r3, #2
+ 967 000c 19D1     		bne	.L63
+ 968 000e 0446     		mov	r4, r0
+ 707:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 969              		.loc 1 707 0
+ 970 0010 FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 971              	.LVL104:
+ 972 0014 0546     		mov	r5, r0
+ 973              	.LVL105:
+ 710:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 974              		.loc 1 710 0
+ 975 0016 04F11403 		add	r3, r4, #20
+ 976              	.LVL106:
+ 977              	.LBB32:
+ 978              	.LBB33:
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev->next = n->next;
+ 979              		.loc 2 88 0
+ 980 001a 6269     		ldr	r2, [r4, #20]
+ 981 001c A169     		ldr	r1, [r4, #24]
+ 982 001e 5160     		str	r1, [r2, #4]
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 983              		.loc 2 89 0
+ 984 0020 A269     		ldr	r2, [r4, #24]
+ 985 0022 6169     		ldr	r1, [r4, #20]
+ 986 0024 1160     		str	r1, [r2]
+ 987              		.loc 2 91 0
+ 988 0026 A361     		str	r3, [r4, #24]
+ 989 0028 6361     		str	r3, [r4, #20]
+ 990              	.LVL107:
+ 991              	.LBE33:
+ 992              	.LBE32:
+ 712:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 993              		.loc 1 712 0
+ 994 002a 04F14400 		add	r0, r4, #68
+ 995              	.LVL108:
+ 996 002e FFF7FEFF 		bl	rt_timer_stop
+ 997              	.LVL109:
+ 715:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 998              		.loc 1 715 0
+ 999 0032 2846     		mov	r0, r5
+ 1000 0034 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 1001              	.LVL110:
+ 718:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1002              		.loc 1 718 0
+ 1003 0038 2046     		mov	r0, r4
+ 1004 003a FFF7FEFF 		bl	rt_schedule_insert_thread
+ 1005              	.LVL111:
+ 721:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 1006              		.loc 1 721 0
+ 1007 003e 0020     		movs	r0, #0
+ 1008              	.LVL112:
+ 1009              	.L61:
+ 722:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_resume);
+ 1010              		.loc 1 722 0
+ 1011 0040 38BD     		pop	{r3, r4, r5, pc}
+ 1012              	.LVL113:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 35
+
+
+ 1013              	.L63:
+ 703:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 1014              		.loc 1 703 0
+ 1015 0042 4FF0FF30 		mov	r0, #-1
+ 1016              	.LVL114:
+ 1017 0046 FBE7     		b	.L61
+ 1018              		.cfi_endproc
+ 1019              	.LFE29:
+ 1021              		.section	.text.rt_thread_startup,"ax",%progbits
+ 1022              		.align	1
+ 1023              		.global	rt_thread_startup
+ 1024              		.syntax unified
+ 1025              		.thumb
+ 1026              		.thumb_func
+ 1027              		.fpu fpv4-sp-d16
+ 1029              	rt_thread_startup:
+ 1030              	.LFB19:
+ 266:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* thread check */
+ 1031              		.loc 1 266 0
+ 1032              		.cfi_startproc
+ 1033              		@ args = 0, pretend = 0, frame = 0
+ 1034              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1035              	.LVL115:
+ 1036 0000 08B5     		push	{r3, lr}
+ 1037              	.LCFI23:
+ 1038              		.cfi_def_cfa_offset 8
+ 1039              		.cfi_offset 3, -8
+ 1040              		.cfi_offset 14, -4
+ 273:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1041              		.loc 1 273 0
+ 1042 0002 90F83610 		ldrb	r1, [r0, #54]	@ zero_extendqisi2
+ 1043 0006 80F83510 		strb	r1, [r0, #53]
+ 281:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 1044              		.loc 1 281 0
+ 1045 000a 0122     		movs	r2, #1
+ 1046 000c 8A40     		lsls	r2, r2, r1
+ 1047 000e 8263     		str	r2, [r0, #56]
+ 287:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* then resume it */
+ 1048              		.loc 1 287 0
+ 1049 0010 0222     		movs	r2, #2
+ 1050 0012 80F83420 		strb	r2, [r0, #52]
+ 289:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (rt_thread_self() != RT_NULL)
+ 1051              		.loc 1 289 0
+ 1052 0016 FFF7FEFF 		bl	rt_thread_resume
+ 1053              	.LVL116:
+ 290:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 1054              		.loc 1 290 0
+ 1055 001a FFF7FEFF 		bl	rt_thread_self
+ 1056              	.LVL117:
+ 1057 001e 08B1     		cbz	r0, .L66
+ 293:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 1058              		.loc 1 293 0
+ 1059 0020 FFF7FEFF 		bl	rt_schedule
+ 1060              	.LVL118:
+ 1061              	.L66:
+ 297:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_startup);
+ 1062              		.loc 1 297 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 36
+
+
+ 1063 0024 0020     		movs	r0, #0
+ 1064 0026 08BD     		pop	{r3, pc}
+ 1065              		.cfi_endproc
+ 1066              	.LFE19:
+ 1068              		.section	.text.rt_thread_control,"ax",%progbits
+ 1069              		.align	1
+ 1070              		.global	rt_thread_control
+ 1071              		.syntax unified
+ 1072              		.thumb
+ 1073              		.thumb_func
+ 1074              		.fpu fpv4-sp-d16
+ 1076              	rt_thread_control:
+ 1077              	.LFB27:
+ 567:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     register rt_base_t temp;
+ 1078              		.loc 1 567 0
+ 1079              		.cfi_startproc
+ 1080              		@ args = 0, pretend = 0, frame = 0
+ 1081              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1082              	.LVL119:
+ 1083 0000 70B5     		push	{r4, r5, r6, lr}
+ 1084              	.LCFI24:
+ 1085              		.cfi_def_cfa_offset 16
+ 1086              		.cfi_offset 4, -16
+ 1087              		.cfi_offset 5, -12
+ 1088              		.cfi_offset 6, -8
+ 1089              		.cfi_offset 14, -4
+ 1090 0002 0446     		mov	r4, r0
+ 574:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 1091              		.loc 1 574 0
+ 1092 0004 0129     		cmp	r1, #1
+ 1093 0006 29D0     		beq	.L70
+ 1094 0008 1546     		mov	r5, r2
+ 1095 000a 0229     		cmp	r1, #2
+ 1096 000c 02D0     		beq	.L71
+ 1097 000e 11B3     		cbz	r1, .L78
+ 631:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 1098              		.loc 1 631 0
+ 1099 0010 0020     		movs	r0, #0
+ 1100              	.LVL120:
+ 1101 0012 12E0     		b	.L68
+ 1102              	.LVL121:
+ 1103              	.L71:
+ 578:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1104              		.loc 1 578 0
+ 1105 0014 FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 1106              	.LVL122:
+ 1107 0018 0646     		mov	r6, r0
+ 1108              	.LVL123:
+ 581:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         {
+ 1109              		.loc 1 581 0
+ 1110 001a 94F83430 		ldrb	r3, [r4, #52]	@ zero_extendqisi2
+ 1111 001e 03F00F03 		and	r3, r3, #15
+ 1112 0022 012B     		cmp	r3, #1
+ 1113 0024 0AD0     		beq	.L79
+ 603:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1114              		.loc 1 603 0
+ 1115 0026 2A78     		ldrb	r2, [r5]	@ zero_extendqisi2
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 37
+
+
+ 1116 0028 84F83520 		strb	r2, [r4, #53]
+ 611:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 1117              		.loc 1 611 0
+ 1118 002c 0123     		movs	r3, #1
+ 1119 002e 9340     		lsls	r3, r3, r2
+ 1120 0030 A363     		str	r3, [r4, #56]
+ 1121              	.LVL124:
+ 1122              	.L74:
+ 616:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         break;
+ 1123              		.loc 1 616 0
+ 1124 0032 3046     		mov	r0, r6
+ 1125 0034 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 1126              	.LVL125:
+ 631:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 1127              		.loc 1 631 0
+ 1128 0038 0020     		movs	r0, #0
+ 1129              	.LVL126:
+ 1130              	.L68:
+ 632:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_control);
+ 1131              		.loc 1 632 0
+ 1132 003a 70BD     		pop	{r4, r5, r6, pc}
+ 1133              	.LVL127:
+ 1134              	.L79:
+ 584:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1135              		.loc 1 584 0
+ 1136 003c 2046     		mov	r0, r4
+ 1137              	.LVL128:
+ 1138 003e FFF7FEFF 		bl	rt_schedule_remove_thread
+ 1139              	.LVL129:
+ 587:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1140              		.loc 1 587 0
+ 1141 0042 2A78     		ldrb	r2, [r5]	@ zero_extendqisi2
+ 1142 0044 84F83520 		strb	r2, [r4, #53]
+ 595:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 1143              		.loc 1 595 0
+ 1144 0048 0123     		movs	r3, #1
+ 1145 004a 9340     		lsls	r3, r3, r2
+ 1146 004c A363     		str	r3, [r4, #56]
+ 599:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         }
+ 1147              		.loc 1 599 0
+ 1148 004e 2046     		mov	r0, r4
+ 1149 0050 FFF7FEFF 		bl	rt_schedule_insert_thread
+ 1150              	.LVL130:
+ 1151 0054 EDE7     		b	.L74
+ 1152              	.LVL131:
+ 1153              	.L78:
+ 620:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 1154              		.loc 1 620 0
+ 1155 0056 FFF7FEFF 		bl	rt_thread_startup
+ 1156              	.LVL132:
+ 1157 005a EEE7     		b	.L68
+ 1158              	.LVL133:
+ 1159              	.L70:
+ 624:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** #endif
+ 1160              		.loc 1 624 0
+ 1161 005c FFF7FEFF 		bl	rt_thread_delete
+ 1162              	.LVL134:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 38
+
+
+ 1163 0060 EBE7     		b	.L68
+ 1164              		.cfi_endproc
+ 1165              	.LFE27:
+ 1167              		.section	.text.rt_thread_find,"ax",%progbits
+ 1168              		.align	1
+ 1169              		.global	rt_thread_find
+ 1170              		.syntax unified
+ 1171              		.thumb
+ 1172              		.thumb_func
+ 1173              		.fpu fpv4-sp-d16
+ 1175              	rt_thread_find:
+ 1176              	.LFB31:
+ 754:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** RTM_EXPORT(rt_thread_timeout);
+ 755:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 756:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** /**
+ 757:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * This function will find the specified thread.
+ 758:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 759:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @param name the name of thread finding
+ 760:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 761:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @return the found thread
+ 762:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  *
+ 763:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  * @note please don't invoke this function in interrupt status.
+ 764:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****  */
+ 765:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** rt_thread_t rt_thread_find(char *name)
+ 766:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** {
+ 1177              		.loc 1 766 0
+ 1178              		.cfi_startproc
+ 1179              		@ args = 0, pretend = 0, frame = 0
+ 1180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1181              	.LVL135:
+ 1182 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 1183              	.LCFI25:
+ 1184              		.cfi_def_cfa_offset 24
+ 1185              		.cfi_offset 3, -24
+ 1186              		.cfi_offset 4, -20
+ 1187              		.cfi_offset 5, -16
+ 1188              		.cfi_offset 6, -12
+ 1189              		.cfi_offset 7, -8
+ 1190              		.cfi_offset 14, -4
+ 1191 0002 0746     		mov	r7, r0
+ 767:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_object_information *information;
+ 768:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_object *object;
+ 769:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     struct rt_list_node *node;
+ 770:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 771:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* enter critical */
+ 772:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (rt_thread_self() != RT_NULL)
+ 1192              		.loc 1 772 0
+ 1193 0004 FFF7FEFF 		bl	rt_thread_self
+ 1194              	.LVL136:
+ 1195 0008 08B1     		cbz	r0, .L81
+ 773:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_enter_critical();
+ 1196              		.loc 1 773 0
+ 1197 000a FFF7FEFF 		bl	rt_enter_critical
+ 1198              	.LVL137:
+ 1199              	.L81:
+ 774:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 775:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* try to find device object */
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 39
+
+
+ 776:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     information = rt_object_get_information(RT_Object_Class_Thread);
+ 1200              		.loc 1 776 0
+ 1201 000e 0120     		movs	r0, #1
+ 1202 0010 FFF7FEFF 		bl	rt_object_get_information
+ 1203              	.LVL138:
+ 1204 0014 0646     		mov	r6, r0
+ 1205              	.LVL139:
+ 777:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     RT_ASSERT(information != RT_NULL);
+ 778:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     for (node  = information->object_list.next;
+ 1206              		.loc 1 778 0
+ 1207 0016 4468     		ldr	r4, [r0, #4]
+ 1208              	.LVL140:
+ 1209              	.L82:
+ 779:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****          node != &(information->object_list);
+ 1210              		.loc 1 779 0 discriminator 1
+ 1211 0018 331D     		adds	r3, r6, #4
+ 778:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****          node != &(information->object_list);
+ 1212              		.loc 1 778 0 discriminator 1
+ 1213 001a A342     		cmp	r3, r4
+ 1214 001c 0FD0     		beq	.L87
+ 780:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****          node  = node->next)
+ 781:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     {
+ 782:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         object = rt_list_entry(node, struct rt_object, list);
+ 1215              		.loc 1 782 0
+ 1216 001e A4F10C05 		sub	r5, r4, #12
+ 1217              	.LVL141:
+ 783:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         if (rt_strncmp(object->name, name, RT_NAME_MAX) == 0)
+ 1218              		.loc 1 783 0
+ 1219 0022 0822     		movs	r2, #8
+ 1220 0024 3946     		mov	r1, r7
+ 1221 0026 2846     		mov	r0, r5
+ 1222 0028 FFF7FEFF 		bl	rt_strncmp
+ 1223              	.LVL142:
+ 1224 002c 08B1     		cbz	r0, .L88
+ 780:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****          node  = node->next)
+ 1225              		.loc 1 780 0
+ 1226 002e 2468     		ldr	r4, [r4]
+ 1227              	.LVL143:
+ 1228 0030 F2E7     		b	.L82
+ 1229              	.L88:
+ 784:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         {
+ 785:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             /* leave critical */
+ 786:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             if (rt_thread_self() != RT_NULL)
+ 1230              		.loc 1 786 0
+ 1231 0032 FFF7FEFF 		bl	rt_thread_self
+ 1232              	.LVL144:
+ 1233 0036 48B1     		cbz	r0, .L80
+ 787:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****                 rt_exit_critical();
+ 1234              		.loc 1 787 0
+ 1235 0038 FFF7FEFF 		bl	rt_exit_critical
+ 1236              	.LVL145:
+ 1237 003c 06E0     		b	.L80
+ 1238              	.LVL146:
+ 1239              	.L87:
+ 788:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 789:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****             return (rt_thread_t)object;
+ 790:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         }
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 40
+
+
+ 791:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     }
+ 792:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 793:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* leave critical */
+ 794:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     if (rt_thread_self() != RT_NULL)
+ 1240              		.loc 1 794 0
+ 1241 003e FFF7FEFF 		bl	rt_thread_self
+ 1242              	.LVL147:
+ 1243 0042 0546     		mov	r5, r0
+ 1244 0044 10B1     		cbz	r0, .L80
+ 795:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****         rt_exit_critical();
+ 1245              		.loc 1 795 0
+ 1246 0046 FFF7FEFF 		bl	rt_exit_critical
+ 1247              	.LVL148:
+ 796:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** 
+ 797:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     /* not found */
+ 798:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c ****     return RT_NULL;
+ 1248              		.loc 1 798 0
+ 1249 004a 0025     		movs	r5, #0
+ 1250              	.L80:
+ 799:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/thread.c **** }
+ 1251              		.loc 1 799 0
+ 1252 004c 2846     		mov	r0, r5
+ 1253 004e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1254              		.cfi_endproc
+ 1255              	.LFE31:
+ 1257              		.text
+ 1258              	.Letext0:
+ 1259              		.file 3 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtdef.h"
+ 1260              		.file 4 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtthread.h"
+ 1261              		.file 5 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rthw.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 41
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 thread.c
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:18     .text.rt_thread_exit:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:25     .text.rt_thread_exit:0000000000000000 rt_thread_exit
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:111    .text.rt_thread_exit:0000000000000054 $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:117    .text._rt_thread_init:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:123    .text._rt_thread_init:0000000000000000 _rt_thread_init
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:224    .text._rt_thread_init:0000000000000070 $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:237    .text.rt_thread_timeout:0000000000000000 rt_thread_timeout
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:230    .text.rt_thread_timeout:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:284    .text.rt_thread_init:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:291    .text.rt_thread_init:0000000000000000 rt_thread_init
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:345    .text.rt_thread_self:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:352    .text.rt_thread_self:0000000000000000 rt_thread_self
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:366    .text.rt_thread_self:0000000000000008 $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:371    .text.rt_thread_detach:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:378    .text.rt_thread_detach:0000000000000000 rt_thread_detach
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:458    .text.rt_thread_detach:0000000000000054 $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:463    .text.rt_thread_create:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:470    .text.rt_thread_create:0000000000000000 rt_thread_create
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:555    .text.rt_thread_delete:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:562    .text.rt_thread_delete:0000000000000000 rt_thread_delete
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:624    .text.rt_thread_delete:0000000000000040 $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:629    .text.rt_thread_yield:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:636    .text.rt_thread_yield:0000000000000000 rt_thread_yield
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:723    .text.rt_thread_yield:0000000000000058 $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:729    .text.rt_thread_suspend:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:736    .text.rt_thread_suspend:0000000000000000 rt_thread_suspend
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:795    .text.rt_thread_sleep:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:802    .text.rt_thread_sleep:0000000000000000 rt_thread_sleep
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:878    .text.rt_thread_sleep:000000000000004c $d
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:883    .text.rt_thread_delay:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:890    .text.rt_thread_delay:0000000000000000 rt_thread_delay
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:911    .text.rt_thread_mdelay:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:918    .text.rt_thread_mdelay:0000000000000000 rt_thread_mdelay
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:942    .text.rt_thread_resume:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:949    .text.rt_thread_resume:0000000000000000 rt_thread_resume
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:1022   .text.rt_thread_startup:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:1029   .text.rt_thread_startup:0000000000000000 rt_thread_startup
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:1069   .text.rt_thread_control:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:1076   .text.rt_thread_control:0000000000000000 rt_thread_control
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:1168   .text.rt_thread_find:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s:1175   .text.rt_thread_find:0000000000000000 rt_thread_find
+
+UNDEFINED SYMBOLS
+rt_hw_interrupt_disable
+rt_schedule_remove_thread
+rt_timer_detach
+rt_object_is_systemobject
+rt_hw_interrupt_enable
+rt_schedule
+rt_object_detach
+rt_current_thread
+rt_thread_defunct
+rt_memset
+rt_hw_stack_init
+rt_timer_init
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccUHvlCl.s 			page 42
+
+
+rt_schedule_insert_thread
+rt_object_init
+rt_object_allocate
+rt_malloc
+rt_object_delete
+rt_thread_priority_table
+rt_timer_stop
+rt_timer_control
+rt_timer_start
+rt_tick_from_millisecond
+rt_enter_critical
+rt_object_get_information
+rt_strncmp
+rt_exit_critical

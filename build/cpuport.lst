@@ -1,0 +1,1025 @@
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"cpuport.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.rt_hw_stack_init,"ax",%progbits
+  18              		.align	1
+  19              		.global	rt_hw_stack_init
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	rt_hw_stack_init:
+  26              	.LFB15:
+  27              		.file 1 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2011-10-21     Bernard      the first version.
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2011-10-27     aozima       update for cortex-M4 FPU.
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2011-12-31     aozima       fixed stack align issues.
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2012-01-01     aozima       support context switch load/store FPU register.
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2012-12-11     lgnq         fixed the coding style.
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2012-12-23     aozima       stack addr align to 8byte.
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2012-12-29     Bernard      Add exception hook.
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2013-06-23     aozima       support lazy stack optimized.
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * 2018-07-24     aozima       enhancement hard fault exception handler.
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  */
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #include <rtthread.h>
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #if               /* ARMCC */ (  (defined ( __CC_ARM ) && defined ( __TARGET_FPU_VFP ))    \
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                   /* Clang */ || (defined ( __CLANG_ARM ) && defined ( __VFP_FP__ ) && !defined(__S
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                   /* IAR */   || (defined ( __ICCARM__ ) && defined ( __ARMVFP__ ))        \
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                   /* GNU */   || (defined ( __GNUC__ ) && defined ( __VFP_FP__ ) && !defined(__SOFT
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define USE_FPU   1
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #else
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define USE_FPU   0
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** /* exception and interrupt handler table */
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** rt_uint32_t rt_interrupt_from_thread;
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 2
+
+
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** rt_uint32_t rt_interrupt_to_thread;
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** rt_uint32_t rt_thread_switch_interrupt_flag;
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** /* exception hook */
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** static rt_err_t (*rt_exception_hook)(void *context) = RT_NULL;
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** struct exception_stack_frame
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r0;
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r1;
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r2;
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r3;
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r12;
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t lr;
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t pc;
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t psr;
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** };
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** struct stack_frame
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #if USE_FPU
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t flag;
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif /* USE_FPU */
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     /* r4 ~ r11 register */
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r4;
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r5;
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r6;
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r7;
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r8;
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r9;
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r10;
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r11;
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     struct exception_stack_frame exception_stack_frame;
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** };
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** struct exception_stack_frame_fpu
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r0;
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r1;
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r2;
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r3;
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r12;
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t lr;
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t pc;
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t psr;
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #if USE_FPU
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     /* FPU register */
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S0;
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S1;
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S2;
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S3;
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S4;
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S5;
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S6;
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S7;
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 3
+
+
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S8;
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S9;
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S10;
+  92:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S11;
+  93:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S12;
+  94:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S13;
+  95:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S14;
+  96:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t S15;
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t FPSCR;
+  98:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t NO_NAME;
+  99:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** };
+ 101:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 102:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** struct stack_frame_fpu
+ 103:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 104:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t flag;
+ 105:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 106:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     /* r4 ~ r11 register */
+ 107:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r4;
+ 108:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r5;
+ 109:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r6;
+ 110:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r7;
+ 111:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r8;
+ 112:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r9;
+ 113:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r10;
+ 114:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t r11;
+ 115:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 116:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #if USE_FPU
+ 117:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     /* FPU register s16 ~ s31 */
+ 118:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s16;
+ 119:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s17;
+ 120:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s18;
+ 121:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s19;
+ 122:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s20;
+ 123:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s21;
+ 124:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s22;
+ 125:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s23;
+ 126:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s24;
+ 127:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s25;
+ 128:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s26;
+ 129:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s27;
+ 130:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s28;
+ 131:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s29;
+ 132:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s30;
+ 133:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t s31;
+ 134:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif
+ 135:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 136:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     struct exception_stack_frame_fpu exception_stack_frame;
+ 137:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** };
+ 138:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 139:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** rt_uint8_t *rt_hw_stack_init(void       *tentry,
+ 140:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                              void       *parameter,
+ 141:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                              rt_uint8_t *stack_addr,
+ 142:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                              void       *texit)
+ 143:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+  28              		.loc 1 143 0
+  29              		.cfi_startproc
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 4
+
+
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              	.LVL0:
+  34 0000 70B4     		push	{r4, r5, r6}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 6, -4
+  40 0002 0646     		mov	r6, r0
+ 144:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     struct stack_frame *stack_frame;
+ 145:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint8_t         *stk;
+ 146:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     unsigned long       i;
+ 147:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 148:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stk  = stack_addr + sizeof(rt_uint32_t);
+  41              		.loc 1 148 0
+  42 0004 0432     		adds	r2, r2, #4
+  43              	.LVL1:
+ 149:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stk  = (rt_uint8_t *)RT_ALIGN_DOWN((rt_uint32_t)stk, 8);
+  44              		.loc 1 149 0
+  45 0006 22F00705 		bic	r5, r2, #7
+  46              	.LVL2:
+ 150:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stk -= sizeof(struct stack_frame);
+  47              		.loc 1 150 0
+  48 000a A5F14400 		sub	r0, r5, #68
+  49              	.LVL3:
+ 151:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 152:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame = (struct stack_frame *)stk;
+ 153:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 154:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     /* init all register */
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     for (i = 0; i < sizeof(struct stack_frame) / sizeof(rt_uint32_t); i ++)
+  50              		.loc 1 155 0
+  51 000e 0022     		movs	r2, #0
+  52              	.LVL4:
+  53 0010 03E0     		b	.L2
+  54              	.LVL5:
+  55              	.L3:
+ 156:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 157:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         ((rt_uint32_t *)stack_frame)[i] = 0xdeadbeef;
+  56              		.loc 1 157 0 discriminator 3
+  57 0012 0E4C     		ldr	r4, .L5
+  58 0014 40F82240 		str	r4, [r0, r2, lsl #2]
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+  59              		.loc 1 155 0 discriminator 3
+  60 0018 0132     		adds	r2, r2, #1
+  61              	.LVL6:
+  62              	.L2:
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+  63              		.loc 1 155 0 is_stmt 0 discriminator 1
+  64 001a 102A     		cmp	r2, #16
+  65 001c F9D9     		bls	.L3
+ 158:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 159:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 160:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.r0  = (unsigned long)parameter; /* r0 : argument */
+  66              		.loc 1 160 0 is_stmt 1
+  67 001e 45F8201C 		str	r1, [r5, #-32]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 5
+
+
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.r1  = 0;                        /* r1 */
+  68              		.loc 1 161 0
+  69 0022 0022     		movs	r2, #0
+  70              	.LVL7:
+  71 0024 45F81C2C 		str	r2, [r5, #-28]
+ 162:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.r2  = 0;                        /* r2 */
+  72              		.loc 1 162 0
+  73 0028 45F8182C 		str	r2, [r5, #-24]
+ 163:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.r3  = 0;                        /* r3 */
+  74              		.loc 1 163 0
+  75 002c 45F8142C 		str	r2, [r5, #-20]
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.r12 = 0;                        /* r12 */
+  76              		.loc 1 164 0
+  77 0030 45F8102C 		str	r2, [r5, #-16]
+ 165:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.lr  = (unsigned long)texit;     /* lr */
+  78              		.loc 1 165 0
+  79 0034 45F80C3C 		str	r3, [r5, #-12]
+ 166:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.pc  = (unsigned long)tentry;    /* entry point, pc */
+  80              		.loc 1 166 0
+  81 0038 45F8086C 		str	r6, [r5, #-8]
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->exception_stack_frame.psr = 0x01000000L;              /* PSR */
+  82              		.loc 1 167 0
+  83 003c 4FF08073 		mov	r3, #16777216
+  84              	.LVL8:
+  85 0040 45F8043C 		str	r3, [r5, #-4]
+ 168:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #if USE_FPU
+ 170:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     stack_frame->flag = 0;
+  86              		.loc 1 170 0
+  87 0044 45F8442C 		str	r2, [r5, #-68]
+ 171:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif /* USE_FPU */
+ 172:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 173:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     /* return task's current stack address */
+ 174:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     return stk;
+ 175:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+  88              		.loc 1 175 0
+  89 0048 70BC     		pop	{r4, r5, r6}
+  90              	.LCFI1:
+  91              		.cfi_restore 6
+  92              		.cfi_restore 5
+  93              		.cfi_restore 4
+  94              		.cfi_def_cfa_offset 0
+  95              	.LVL9:
+  96 004a 7047     		bx	lr
+  97              	.L6:
+  98              		.align	2
+  99              	.L5:
+ 100 004c EFBEADDE 		.word	-559038737
+ 101              		.cfi_endproc
+ 102              	.LFE15:
+ 104              		.section	.text.rt_hw_exception_install,"ax",%progbits
+ 105              		.align	1
+ 106              		.global	rt_hw_exception_install
+ 107              		.syntax unified
+ 108              		.thumb
+ 109              		.thumb_func
+ 110              		.fpu fpv4-sp-d16
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 6
+
+
+ 112              	rt_hw_exception_install:
+ 113              	.LFB16:
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 177:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** /**
+ 178:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * This function set the hook, which is invoked on fault exception handling.
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  *
+ 180:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * @param exception_handle the exception handling hook function.
+ 181:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  */
+ 182:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** void rt_hw_exception_install(rt_err_t (*exception_handle)(void *context))
+ 183:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 114              		.loc 1 183 0
+ 115              		.cfi_startproc
+ 116              		@ args = 0, pretend = 0, frame = 0
+ 117              		@ frame_needed = 0, uses_anonymous_args = 0
+ 118              		@ link register save eliminated.
+ 119              	.LVL10:
+ 184:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_exception_hook = exception_handle;
+ 120              		.loc 1 184 0
+ 121 0000 014B     		ldr	r3, .L8
+ 122 0002 1860     		str	r0, [r3]
+ 185:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 123              		.loc 1 185 0
+ 124 0004 7047     		bx	lr
+ 125              	.L9:
+ 126 0006 00BF     		.align	2
+ 127              	.L8:
+ 128 0008 00000000 		.word	.LANCHOR0
+ 129              		.cfi_endproc
+ 130              	.LFE16:
+ 132              		.section	.text.rt_hw_hard_fault_exception,"ax",%progbits
+ 133              		.align	1
+ 134              		.global	rt_hw_hard_fault_exception
+ 135              		.syntax unified
+ 136              		.thumb
+ 137              		.thumb_func
+ 138              		.fpu fpv4-sp-d16
+ 140              	rt_hw_hard_fault_exception:
+ 141              	.LFB17:
+ 186:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 187:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_CFSR        (*(volatile const unsigned *)0xE000ED28) /* Configurable Fault Status Regis
+ 188:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_HFSR        (*(volatile const unsigned *)0xE000ED2C) /* HardFault Status Register */
+ 189:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_MMAR        (*(volatile const unsigned *)0xE000ED34) /* MemManage Fault Address registe
+ 190:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_BFAR        (*(volatile const unsigned *)0xE000ED38) /* Bus Fault Address Register */
+ 191:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_AIRCR       (*(volatile unsigned long *)0xE000ED0C)  /* Reset control Address Register 
+ 192:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_RESET_VALUE 0x05FA0004                               /* Reset value, write to SCB_AIRCR
+ 193:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 194:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_CFSR_MFSR   (*(volatile const unsigned char*)0xE000ED28)  /* Memory-management Fault St
+ 195:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_CFSR_BFSR   (*(volatile const unsigned char*)0xE000ED29)  /* Bus Fault Status Register 
+ 196:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #define SCB_CFSR_UFSR   (*(volatile const unsigned short*)0xE000ED2A) /* Usage Fault Status Registe
+ 197:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 198:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #ifdef RT_USING_FINSH
+ 199:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** static void usage_fault_track(void)
+ 200:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 201:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("usage fault:\n");
+ 202:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("SCB_CFSR_UFSR:0x%02X ", SCB_CFSR_UFSR);
+ 203:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 204:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_UFSR & (1<<0))
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 7
+
+
+ 205:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 206:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [0]:UNDEFINSTR */
+ 207:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("UNDEFINSTR ");
+ 208:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 209:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 210:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_UFSR & (1<<1))
+ 211:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 212:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [1]:INVSTATE */
+ 213:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("INVSTATE ");
+ 214:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 215:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 216:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_UFSR & (1<<2))
+ 217:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 218:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [2]:INVPC */
+ 219:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("INVPC ");
+ 220:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 221:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 222:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_UFSR & (1<<3))
+ 223:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 224:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [3]:NOCP */
+ 225:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("NOCP ");
+ 226:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 227:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 228:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_UFSR & (1<<8))
+ 229:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 230:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [8]:UNALIGNED */
+ 231:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("UNALIGNED ");
+ 232:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 233:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 234:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_UFSR & (1<<9))
+ 235:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 236:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [9]:DIVBYZERO */
+ 237:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("DIVBYZERO ");
+ 238:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 239:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 240:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("\n");
+ 241:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 242:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 243:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** static void bus_fault_track(void)
+ 244:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 245:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("bus fault:\n");
+ 246:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("SCB_CFSR_BFSR:0x%02X ", SCB_CFSR_BFSR);
+ 247:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 248:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_BFSR & (1<<0))
+ 249:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 250:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [0]:IBUSERR */
+ 251:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("IBUSERR ");
+ 252:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 253:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 254:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_BFSR & (1<<1))
+ 255:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 256:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [1]:PRECISERR */
+ 257:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("PRECISERR ");
+ 258:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 259:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 260:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_BFSR & (1<<2))
+ 261:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 8
+
+
+ 262:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [2]:IMPRECISERR */
+ 263:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("IMPRECISERR ");
+ 264:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 265:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 266:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_BFSR & (1<<3))
+ 267:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 268:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [3]:UNSTKERR */
+ 269:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("UNSTKERR ");
+ 270:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 271:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 272:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_BFSR & (1<<4))
+ 273:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 274:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [4]:STKERR */
+ 275:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("STKERR ");
+ 276:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 277:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 278:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_BFSR & (1<<7))
+ 279:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 280:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("SCB->BFAR:%08X\n", SCB_BFAR);
+ 281:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 282:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     else
+ 283:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 284:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("\n");
+ 285:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 286:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 287:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 288:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** static void mem_manage_fault_track(void)
+ 289:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 290:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("mem manage fault:\n");
+ 291:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("SCB_CFSR_MFSR:0x%02X ", SCB_CFSR_MFSR);
+ 292:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 293:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_MFSR & (1<<0))
+ 294:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 295:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [0]:IACCVIOL */
+ 296:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("IACCVIOL ");
+ 297:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 298:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 299:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_MFSR & (1<<1))
+ 300:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 301:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [1]:DACCVIOL */
+ 302:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("DACCVIOL ");
+ 303:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 304:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 305:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_MFSR & (1<<3))
+ 306:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 307:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [3]:MUNSTKERR */
+ 308:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("MUNSTKERR ");
+ 309:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 310:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 311:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_MFSR & (1<<4))
+ 312:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 313:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [4]:MSTKERR */
+ 314:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("MSTKERR ");
+ 315:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 316:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 317:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_CFSR_MFSR & (1<<7))
+ 318:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 9
+
+
+ 319:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [7]:MMARVALID */
+ 320:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("SCB->MMAR:%08X\n", SCB_MMAR);
+ 321:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 322:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     else
+ 323:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 324:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("\n");
+ 325:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 326:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 327:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 328:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** static void hard_fault_track(void)
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 330:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_HFSR & (1UL<<1))
+ 331:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 332:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [1]:VECTBL, Indicates hard fault is caused by failed vector fetch. */
+ 333:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("failed vector fetch\n");
+ 334:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 335:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 336:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_HFSR & (1UL<<30))
+ 337:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 338:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [30]:FORCED, Indicates hard fault is taken because of bus fault,
+ 339:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****                         memory management fault, or usage fault. */
+ 340:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         if(SCB_CFSR_BFSR)
+ 341:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         {
+ 342:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****             bus_fault_track();
+ 343:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         }
+ 344:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 345:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         if(SCB_CFSR_MFSR)
+ 346:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         {
+ 347:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****             mem_manage_fault_track();
+ 348:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         }
+ 349:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 350:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         if(SCB_CFSR_UFSR)
+ 351:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         {
+ 352:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****             usage_fault_track();
+ 353:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         }
+ 354:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 355:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 356:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if(SCB_HFSR & (1UL<<31))
+ 357:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 358:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         /* [31]:DEBUGEVT, Indicates hard fault is triggered by debug event. */
+ 359:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("debug event\n");
+ 360:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 361:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 362:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif /* RT_USING_FINSH */
+ 363:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 364:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** struct exception_info
+ 365:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 366:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_uint32_t exc_return;
+ 367:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     struct stack_frame stack_frame;
+ 368:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** };
+ 369:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 370:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** void rt_hw_hard_fault_exception(struct exception_info *exception_info)
+ 371:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 142              		.loc 1 371 0
+ 143              		.cfi_startproc
+ 144              		@ args = 0, pretend = 0, frame = 0
+ 145              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 10
+
+
+ 146              	.LVL11:
+ 147 0000 10B5     		push	{r4, lr}
+ 148              	.LCFI2:
+ 149              		.cfi_def_cfa_offset 8
+ 150              		.cfi_offset 4, -8
+ 151              		.cfi_offset 14, -4
+ 152 0002 0446     		mov	r4, r0
+ 153              	.LVL12:
+ 372:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     extern long list_thread(void);
+ 373:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     struct exception_stack_frame *exception_stack = &exception_info->stack_frame.exception_stack_fr
+ 374:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     struct stack_frame *context = &exception_info->stack_frame;
+ 375:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 376:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if (rt_exception_hook != RT_NULL)
+ 154              		.loc 1 376 0
+ 155 0004 2F4B     		ldr	r3, .L18
+ 156 0006 1B68     		ldr	r3, [r3]
+ 157 0008 1BB1     		cbz	r3, .L11
+ 158 000a 2830     		adds	r0, r0, #40
+ 159              	.LVL13:
+ 160              	.LBB2:
+ 377:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 378:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_err_t result;
+ 379:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 380:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         result = rt_exception_hook(exception_stack);
+ 161              		.loc 1 380 0
+ 162 000c 9847     		blx	r3
+ 163              	.LVL14:
+ 381:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         if (result == RT_EOK) return;
+ 164              		.loc 1 381 0
+ 165 000e 0028     		cmp	r0, #0
+ 166 0010 56D0     		beq	.L10
+ 167              	.LVL15:
+ 168              	.L11:
+ 169              	.LBE2:
+ 382:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 383:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 384:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("psr: 0x%08x\n", context->exception_stack_frame.psr);
+ 170              		.loc 1 384 0
+ 171 0012 616C     		ldr	r1, [r4, #68]
+ 172 0014 2C48     		ldr	r0, .L18+4
+ 173 0016 FFF7FEFF 		bl	rt_kprintf
+ 174              	.LVL16:
+ 385:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 386:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r00: 0x%08x\n", context->exception_stack_frame.r0);
+ 175              		.loc 1 386 0
+ 176 001a A16A     		ldr	r1, [r4, #40]
+ 177 001c 2B48     		ldr	r0, .L18+8
+ 178 001e FFF7FEFF 		bl	rt_kprintf
+ 179              	.LVL17:
+ 387:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r01: 0x%08x\n", context->exception_stack_frame.r1);
+ 180              		.loc 1 387 0
+ 181 0022 E16A     		ldr	r1, [r4, #44]
+ 182 0024 2A48     		ldr	r0, .L18+12
+ 183 0026 FFF7FEFF 		bl	rt_kprintf
+ 184              	.LVL18:
+ 388:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r02: 0x%08x\n", context->exception_stack_frame.r2);
+ 185              		.loc 1 388 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 11
+
+
+ 186 002a 216B     		ldr	r1, [r4, #48]
+ 187 002c 2948     		ldr	r0, .L18+16
+ 188 002e FFF7FEFF 		bl	rt_kprintf
+ 189              	.LVL19:
+ 389:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r03: 0x%08x\n", context->exception_stack_frame.r3);
+ 190              		.loc 1 389 0
+ 191 0032 616B     		ldr	r1, [r4, #52]
+ 192 0034 2848     		ldr	r0, .L18+20
+ 193 0036 FFF7FEFF 		bl	rt_kprintf
+ 194              	.LVL20:
+ 390:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r04: 0x%08x\n", context->r4);
+ 195              		.loc 1 390 0
+ 196 003a A168     		ldr	r1, [r4, #8]
+ 197 003c 2748     		ldr	r0, .L18+24
+ 198 003e FFF7FEFF 		bl	rt_kprintf
+ 199              	.LVL21:
+ 391:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r05: 0x%08x\n", context->r5);
+ 200              		.loc 1 391 0
+ 201 0042 E168     		ldr	r1, [r4, #12]
+ 202 0044 2648     		ldr	r0, .L18+28
+ 203 0046 FFF7FEFF 		bl	rt_kprintf
+ 204              	.LVL22:
+ 392:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r06: 0x%08x\n", context->r6);
+ 205              		.loc 1 392 0
+ 206 004a 2169     		ldr	r1, [r4, #16]
+ 207 004c 2548     		ldr	r0, .L18+32
+ 208 004e FFF7FEFF 		bl	rt_kprintf
+ 209              	.LVL23:
+ 393:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r07: 0x%08x\n", context->r7);
+ 210              		.loc 1 393 0
+ 211 0052 6169     		ldr	r1, [r4, #20]
+ 212 0054 2448     		ldr	r0, .L18+36
+ 213 0056 FFF7FEFF 		bl	rt_kprintf
+ 214              	.LVL24:
+ 394:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r08: 0x%08x\n", context->r8);
+ 215              		.loc 1 394 0
+ 216 005a A169     		ldr	r1, [r4, #24]
+ 217 005c 2348     		ldr	r0, .L18+40
+ 218 005e FFF7FEFF 		bl	rt_kprintf
+ 219              	.LVL25:
+ 395:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r09: 0x%08x\n", context->r9);
+ 220              		.loc 1 395 0
+ 221 0062 E169     		ldr	r1, [r4, #28]
+ 222 0064 2248     		ldr	r0, .L18+44
+ 223 0066 FFF7FEFF 		bl	rt_kprintf
+ 224              	.LVL26:
+ 396:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r10: 0x%08x\n", context->r10);
+ 225              		.loc 1 396 0
+ 226 006a 216A     		ldr	r1, [r4, #32]
+ 227 006c 2148     		ldr	r0, .L18+48
+ 228 006e FFF7FEFF 		bl	rt_kprintf
+ 229              	.LVL27:
+ 397:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r11: 0x%08x\n", context->r11);
+ 230              		.loc 1 397 0
+ 231 0072 616A     		ldr	r1, [r4, #36]
+ 232 0074 2048     		ldr	r0, .L18+52
+ 233 0076 FFF7FEFF 		bl	rt_kprintf
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 12
+
+
+ 234              	.LVL28:
+ 398:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("r12: 0x%08x\n", context->exception_stack_frame.r12);
+ 235              		.loc 1 398 0
+ 236 007a A16B     		ldr	r1, [r4, #56]
+ 237 007c 1F48     		ldr	r0, .L18+56
+ 238 007e FFF7FEFF 		bl	rt_kprintf
+ 239              	.LVL29:
+ 399:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf(" lr: 0x%08x\n", context->exception_stack_frame.lr);
+ 240              		.loc 1 399 0
+ 241 0082 E16B     		ldr	r1, [r4, #60]
+ 242 0084 1E48     		ldr	r0, .L18+60
+ 243 0086 FFF7FEFF 		bl	rt_kprintf
+ 244              	.LVL30:
+ 400:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf(" pc: 0x%08x\n", context->exception_stack_frame.pc);
+ 245              		.loc 1 400 0
+ 246 008a 216C     		ldr	r1, [r4, #64]
+ 247 008c 1D48     		ldr	r0, .L18+64
+ 248 008e FFF7FEFF 		bl	rt_kprintf
+ 249              	.LVL31:
+ 401:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 402:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if (exception_info->exc_return & (1 << 2))
+ 250              		.loc 1 402 0
+ 251 0092 2368     		ldr	r3, [r4]
+ 252 0094 13F0040F 		tst	r3, #4
+ 253 0098 0AD0     		beq	.L13
+ 403:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 404:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("hard fault on thread: %s\r\n\r\n", rt_thread_self()->name);
+ 254              		.loc 1 404 0
+ 255 009a FFF7FEFF 		bl	rt_thread_self
+ 256              	.LVL32:
+ 257 009e 0146     		mov	r1, r0
+ 258 00a0 1948     		ldr	r0, .L18+68
+ 259 00a2 FFF7FEFF 		bl	rt_kprintf
+ 260              	.LVL33:
+ 261              	.L14:
+ 405:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 406:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #ifdef RT_USING_FINSH
+ 407:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         list_thread();
+ 408:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif
+ 409:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 410:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     else
+ 411:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 412:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("hard fault on handler\r\n\r\n");
+ 413:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 414:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 415:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     if ( (exception_info->exc_return & 0x10) == 0)
+ 262              		.loc 1 415 0
+ 263 00a6 2368     		ldr	r3, [r4]
+ 264 00a8 13F0100F 		tst	r3, #16
+ 265 00ac 04D0     		beq	.L17
+ 266              	.L15:
+ 267 00ae FEE7     		b	.L15
+ 268              	.L13:
+ 412:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 269              		.loc 1 412 0
+ 270 00b0 1648     		ldr	r0, .L18+72
+ 271 00b2 FFF7FEFF 		bl	rt_kprintf
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 13
+
+
+ 272              	.LVL34:
+ 273 00b6 F6E7     		b	.L14
+ 274              	.L17:
+ 416:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     {
+ 417:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****         rt_kprintf("FPU active!\r\n");
+ 275              		.loc 1 417 0
+ 276 00b8 1548     		ldr	r0, .L18+76
+ 277 00ba FFF7FEFF 		bl	rt_kprintf
+ 278              	.LVL35:
+ 279 00be F6E7     		b	.L15
+ 280              	.LVL36:
+ 281              	.L10:
+ 418:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     }
+ 419:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 420:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #ifdef RT_USING_FINSH
+ 421:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     hard_fault_track();
+ 422:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** #endif /* RT_USING_FINSH */
+ 423:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 424:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     while (1);
+ 425:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 282              		.loc 1 425 0
+ 283 00c0 10BD     		pop	{r4, pc}
+ 284              	.LVL37:
+ 285              	.L19:
+ 286 00c2 00BF     		.align	2
+ 287              	.L18:
+ 288 00c4 00000000 		.word	.LANCHOR0
+ 289 00c8 00000000 		.word	.LC0
+ 290 00cc 10000000 		.word	.LC1
+ 291 00d0 20000000 		.word	.LC2
+ 292 00d4 30000000 		.word	.LC3
+ 293 00d8 40000000 		.word	.LC4
+ 294 00dc 50000000 		.word	.LC5
+ 295 00e0 60000000 		.word	.LC6
+ 296 00e4 70000000 		.word	.LC7
+ 297 00e8 80000000 		.word	.LC8
+ 298 00ec 90000000 		.word	.LC9
+ 299 00f0 A0000000 		.word	.LC10
+ 300 00f4 B0000000 		.word	.LC11
+ 301 00f8 C0000000 		.word	.LC12
+ 302 00fc D0000000 		.word	.LC13
+ 303 0100 E0000000 		.word	.LC14
+ 304 0104 F0000000 		.word	.LC15
+ 305 0108 00010000 		.word	.LC16
+ 306 010c 20010000 		.word	.LC17
+ 307 0110 3C010000 		.word	.LC18
+ 308              		.cfi_endproc
+ 309              	.LFE17:
+ 311              		.section	.text.rt_hw_cpu_shutdown,"ax",%progbits
+ 312              		.align	1
+ 313              		.global	rt_hw_cpu_shutdown
+ 314              		.syntax unified
+ 315              		.thumb
+ 316              		.thumb_func
+ 317              		.fpu fpv4-sp-d16
+ 319              	rt_hw_cpu_shutdown:
+ 320              	.LFB18:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 14
+
+
+ 426:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 427:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** /**
+ 428:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * shutdown CPU
+ 429:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  */
+ 430:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** void rt_hw_cpu_shutdown(void)
+ 431:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 321              		.loc 1 431 0
+ 322              		.cfi_startproc
+ 323              		@ args = 0, pretend = 0, frame = 0
+ 324              		@ frame_needed = 0, uses_anonymous_args = 0
+ 325 0000 08B5     		push	{r3, lr}
+ 326              	.LCFI3:
+ 327              		.cfi_def_cfa_offset 8
+ 328              		.cfi_offset 3, -8
+ 329              		.cfi_offset 14, -4
+ 432:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     rt_kprintf("shutdown...\n");
+ 330              		.loc 1 432 0
+ 331 0002 0248     		ldr	r0, .L22
+ 332 0004 FFF7FEFF 		bl	rt_kprintf
+ 333              	.LVL38:
+ 433:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 434:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     RT_ASSERT(0);
+ 435:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ 334              		.loc 1 435 0
+ 335 0008 08BD     		pop	{r3, pc}
+ 336              	.L23:
+ 337 000a 00BF     		.align	2
+ 338              	.L22:
+ 339 000c 00000000 		.word	.LC19
+ 340              		.cfi_endproc
+ 341              	.LFE18:
+ 343              		.section	.text.rt_hw_cpu_reset,"ax",%progbits
+ 344              		.align	1
+ 345              		.weak	rt_hw_cpu_reset
+ 346              		.syntax unified
+ 347              		.thumb
+ 348              		.thumb_func
+ 349              		.fpu fpv4-sp-d16
+ 351              	rt_hw_cpu_reset:
+ 352              	.LFB19:
+ 436:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** 
+ 437:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** /**
+ 438:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  * reset CPU
+ 439:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****  */
+ 440:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** RT_WEAK void rt_hw_cpu_reset(void)
+ 441:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** {
+ 353              		.loc 1 441 0
+ 354              		.cfi_startproc
+ 355              		@ args = 0, pretend = 0, frame = 0
+ 356              		@ frame_needed = 0, uses_anonymous_args = 0
+ 357              		@ link register save eliminated.
+ 442:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c ****     SCB_AIRCR = SCB_RESET_VALUE;
+ 358              		.loc 1 442 0
+ 359 0000 014B     		ldr	r3, .L25
+ 360 0002 024A     		ldr	r2, .L25+4
+ 361 0004 1A60     		str	r2, [r3]
+ 443:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/libcpu/arm/cortex-m4/cpuport.c **** }
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 15
+
+
+ 362              		.loc 1 443 0
+ 363 0006 7047     		bx	lr
+ 364              	.L26:
+ 365              		.align	2
+ 366              	.L25:
+ 367 0008 0CED00E0 		.word	-536810228
+ 368 000c 0400FA05 		.word	100270084
+ 369              		.cfi_endproc
+ 370              	.LFE19:
+ 372              		.comm	rt_thread_switch_interrupt_flag,4,4
+ 373              		.comm	rt_interrupt_to_thread,4,4
+ 374              		.comm	rt_interrupt_from_thread,4,4
+ 375              		.section	.bss.rt_exception_hook,"aw",%nobits
+ 376              		.align	2
+ 377              		.set	.LANCHOR0,. + 0
+ 380              	rt_exception_hook:
+ 381 0000 00000000 		.space	4
+ 382              		.section	.rodata.rt_hw_cpu_shutdown.str1.4,"aMS",%progbits,1
+ 383              		.align	2
+ 384              	.LC19:
+ 385 0000 73687574 		.ascii	"shutdown...\012\000"
+ 385      646F776E 
+ 385      2E2E2E0A 
+ 385      00
+ 386              		.section	.rodata.rt_hw_hard_fault_exception.str1.4,"aMS",%progbits,1
+ 387              		.align	2
+ 388              	.LC0:
+ 389 0000 7073723A 		.ascii	"psr: 0x%08x\012\000"
+ 389      20307825 
+ 389      3038780A 
+ 389      00
+ 390 000d 000000   		.space	3
+ 391              	.LC1:
+ 392 0010 7230303A 		.ascii	"r00: 0x%08x\012\000"
+ 392      20307825 
+ 392      3038780A 
+ 392      00
+ 393 001d 000000   		.space	3
+ 394              	.LC2:
+ 395 0020 7230313A 		.ascii	"r01: 0x%08x\012\000"
+ 395      20307825 
+ 395      3038780A 
+ 395      00
+ 396 002d 000000   		.space	3
+ 397              	.LC3:
+ 398 0030 7230323A 		.ascii	"r02: 0x%08x\012\000"
+ 398      20307825 
+ 398      3038780A 
+ 398      00
+ 399 003d 000000   		.space	3
+ 400              	.LC4:
+ 401 0040 7230333A 		.ascii	"r03: 0x%08x\012\000"
+ 401      20307825 
+ 401      3038780A 
+ 401      00
+ 402 004d 000000   		.space	3
+ 403              	.LC5:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 16
+
+
+ 404 0050 7230343A 		.ascii	"r04: 0x%08x\012\000"
+ 404      20307825 
+ 404      3038780A 
+ 404      00
+ 405 005d 000000   		.space	3
+ 406              	.LC6:
+ 407 0060 7230353A 		.ascii	"r05: 0x%08x\012\000"
+ 407      20307825 
+ 407      3038780A 
+ 407      00
+ 408 006d 000000   		.space	3
+ 409              	.LC7:
+ 410 0070 7230363A 		.ascii	"r06: 0x%08x\012\000"
+ 410      20307825 
+ 410      3038780A 
+ 410      00
+ 411 007d 000000   		.space	3
+ 412              	.LC8:
+ 413 0080 7230373A 		.ascii	"r07: 0x%08x\012\000"
+ 413      20307825 
+ 413      3038780A 
+ 413      00
+ 414 008d 000000   		.space	3
+ 415              	.LC9:
+ 416 0090 7230383A 		.ascii	"r08: 0x%08x\012\000"
+ 416      20307825 
+ 416      3038780A 
+ 416      00
+ 417 009d 000000   		.space	3
+ 418              	.LC10:
+ 419 00a0 7230393A 		.ascii	"r09: 0x%08x\012\000"
+ 419      20307825 
+ 419      3038780A 
+ 419      00
+ 420 00ad 000000   		.space	3
+ 421              	.LC11:
+ 422 00b0 7231303A 		.ascii	"r10: 0x%08x\012\000"
+ 422      20307825 
+ 422      3038780A 
+ 422      00
+ 423 00bd 000000   		.space	3
+ 424              	.LC12:
+ 425 00c0 7231313A 		.ascii	"r11: 0x%08x\012\000"
+ 425      20307825 
+ 425      3038780A 
+ 425      00
+ 426 00cd 000000   		.space	3
+ 427              	.LC13:
+ 428 00d0 7231323A 		.ascii	"r12: 0x%08x\012\000"
+ 428      20307825 
+ 428      3038780A 
+ 428      00
+ 429 00dd 000000   		.space	3
+ 430              	.LC14:
+ 431 00e0 206C723A 		.ascii	" lr: 0x%08x\012\000"
+ 431      20307825 
+ 431      3038780A 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 17
+
+
+ 431      00
+ 432 00ed 000000   		.space	3
+ 433              	.LC15:
+ 434 00f0 2070633A 		.ascii	" pc: 0x%08x\012\000"
+ 434      20307825 
+ 434      3038780A 
+ 434      00
+ 435 00fd 000000   		.space	3
+ 436              	.LC16:
+ 437 0100 68617264 		.ascii	"hard fault on thread: %s\015\012\015\012\000"
+ 437      20666175 
+ 437      6C74206F 
+ 437      6E207468 
+ 437      72656164 
+ 438 011d 000000   		.space	3
+ 439              	.LC17:
+ 440 0120 68617264 		.ascii	"hard fault on handler\015\012\015\012\000"
+ 440      20666175 
+ 440      6C74206F 
+ 440      6E206861 
+ 440      6E646C65 
+ 441 013a 0000     		.space	2
+ 442              	.LC18:
+ 443 013c 46505520 		.ascii	"FPU active!\015\012\000"
+ 443      61637469 
+ 443      7665210D 
+ 443      0A00
+ 444              		.text
+ 445              	.Letext0:
+ 446              		.file 2 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtdef.h"
+ 447              		.file 3 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtthread.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cceglKiN.s 			page 18
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 cpuport.c
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:18     .text.rt_hw_stack_init:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:25     .text.rt_hw_stack_init:0000000000000000 rt_hw_stack_init
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:100    .text.rt_hw_stack_init:000000000000004c $d
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:105    .text.rt_hw_exception_install:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:112    .text.rt_hw_exception_install:0000000000000000 rt_hw_exception_install
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:128    .text.rt_hw_exception_install:0000000000000008 $d
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:133    .text.rt_hw_hard_fault_exception:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:140    .text.rt_hw_hard_fault_exception:0000000000000000 rt_hw_hard_fault_exception
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:288    .text.rt_hw_hard_fault_exception:00000000000000c4 $d
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:312    .text.rt_hw_cpu_shutdown:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:319    .text.rt_hw_cpu_shutdown:0000000000000000 rt_hw_cpu_shutdown
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:339    .text.rt_hw_cpu_shutdown:000000000000000c $d
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:344    .text.rt_hw_cpu_reset:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:351    .text.rt_hw_cpu_reset:0000000000000000 rt_hw_cpu_reset
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:367    .text.rt_hw_cpu_reset:0000000000000008 $d
+                            *COM*:0000000000000004 rt_thread_switch_interrupt_flag
+                            *COM*:0000000000000004 rt_interrupt_to_thread
+                            *COM*:0000000000000004 rt_interrupt_from_thread
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:376    .bss.rt_exception_hook:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:380    .bss.rt_exception_hook:0000000000000000 rt_exception_hook
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:383    .rodata.rt_hw_cpu_shutdown.str1.4:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cceglKiN.s:387    .rodata.rt_hw_hard_fault_exception.str1.4:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+rt_kprintf
+rt_thread_self

@@ -1,0 +1,1821 @@
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"mem.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.plug_holes,"ax",%progbits
+  18              		.align	1
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	plug_holes:
+  25              	.LFB15:
+  26              		.file 1 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 2008-7-12      Bernard      the first version
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 2010-06-09     Bernard      fix the end stub of heap
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *                             fix memory check in rt_realloc function
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 2010-07-13     Bernard      fix RT_ALIGN issue found by kuronca
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 2010-10-14     Bernard      fix rt_realloc issue when realloc a NULL pointer.
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 2017-07-14     armink       fix rt_realloc issue when new size is 0
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /*
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * All rights reserved.
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Redistribution and use in source and binary forms, with or without modification,
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * are permitted provided that the following conditions are met:
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 1. Redistributions of source code must retain the above copyright notice,
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *    this list of conditions and the following disclaimer.
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 2. Redistributions in binary form must reproduce the above copyright notice,
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *    this list of conditions and the following disclaimer in the documentation
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *    and/or other materials provided with the distribution.
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * 3. The name of the author may not be used to endorse or promote products
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *    derived from this software without specific prior written permission.
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 2
+
+
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * OF SUCH DAMAGE.
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This file is part of the lwIP TCP/IP stack.
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Author: Adam Dunkels <adam@sics.se>
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *         Simon Goldschmidt
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #include <rthw.h>
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #include <rtthread.h>
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifndef RT_USING_MEMHEAP_AS_HEAP
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /* #define RT_MEM_DEBUG */
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #define RT_MEM_STATS
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #if defined (RT_USING_HEAP) && defined (RT_USING_SMALL_MEM)
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_HOOK
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static void (*rt_malloc_hook)(void *ptr, rt_size_t size);
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static void (*rt_free_hook)(void *ptr);
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @addtogroup Hook
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**@{*/
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This function will set a hook function, which will be invoked when a memory
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * block is allocated from heap memory.
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param hook the hook function
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void rt_malloc_sethook(void (*hook)(void *ptr, rt_size_t size))
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_malloc_hook = hook;
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This function will set a hook function, which will be invoked when a memory
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * block is released to heap memory.
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param hook the hook function
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void rt_free_sethook(void (*hook)(void *ptr))
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_free_hook = hook;
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 3
+
+
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**@}*/
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  92:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+  93:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+  94:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #define HEAP_MAGIC 0x1ea0
+  95:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** struct heap_mem
+  96:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* magic and used flag */
+  98:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_uint16_t magic;
+  99:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_uint16_t used;
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 101:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_size_t next, prev;
+ 102:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 103:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 104:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_uint8_t thread[4];   /* thread name */
+ 105:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 106:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** };
+ 107:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 108:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /** pointer to the heap: for alignment, heap_ptr is now a pointer instead of an array */
+ 109:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static rt_uint8_t *heap_ptr;
+ 110:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 111:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /** the last entry, always unused! */
+ 112:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static struct heap_mem *heap_end;
+ 113:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 114:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #define MIN_SIZE 12
+ 115:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #define MIN_SIZE_ALIGNED     RT_ALIGN(MIN_SIZE, RT_ALIGN_SIZE)
+ 116:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #define SIZEOF_STRUCT_MEM    RT_ALIGN(sizeof(struct heap_mem), RT_ALIGN_SIZE)
+ 117:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 118:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static struct heap_mem *lfree;   /* pointer to the lowest free block */
+ 119:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 120:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static struct rt_semaphore heap_sem;
+ 121:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static rt_size_t mem_size_aligned;
+ 122:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 123:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_MEM_STATS
+ 124:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static rt_size_t used_mem, max_mem;
+ 125:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 126:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 127:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** rt_inline void rt_mem_setname(struct heap_mem *mem, const char *name)
+ 128:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 129:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     int index;
+ 130:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     for (index = 0; index < sizeof(mem->thread); index ++)
+ 131:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 132:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         if (name[index] == '\0') break;
+ 133:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem->thread[index] = name[index];
+ 134:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 135:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 136:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     for (; index < sizeof(mem->thread); index ++)
+ 137:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 138:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem->thread[index] = ' ';
+ 139:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 140:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 141:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 142:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 143:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** static void plug_holes(struct heap_mem *mem)
+ 144:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+  27              		.loc 1 144 0
+  28              		.cfi_startproc
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 4
+
+
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32              	.LVL0:
+ 145:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *nmem;
+ 146:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *pmem;
+ 147:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 148:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT((rt_uint8_t *)mem >= heap_ptr);
+ 149:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT((rt_uint8_t *)mem < (rt_uint8_t *)heap_end);
+ 150:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT(mem->used == 0);
+ 151:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 152:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* plug hole forward */
+ 153:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     nmem = (struct heap_mem *)&heap_ptr[mem->next];
+  33              		.loc 1 153 0
+  34 0000 164B     		ldr	r3, .L8
+  35 0002 1968     		ldr	r1, [r3]
+  36 0004 4268     		ldr	r2, [r0, #4]
+  37 0006 0A44     		add	r2, r2, r1
+  38              	.LVL1:
+ 154:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (mem != nmem &&
+  39              		.loc 1 154 0
+  40 0008 9042     		cmp	r0, r2
+  41 000a 0FD0     		beq	.L2
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         nmem->used == 0 &&
+  42              		.loc 1 155 0 discriminator 1
+  43 000c 5388     		ldrh	r3, [r2, #2]
+ 154:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (mem != nmem &&
+  44              		.loc 1 154 0 discriminator 1
+  45 000e 6BB9     		cbnz	r3, .L2
+ 156:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         (rt_uint8_t *)nmem != (rt_uint8_t *)heap_end)
+  46              		.loc 1 156 0
+  47 0010 134B     		ldr	r3, .L8+4
+  48 0012 1B68     		ldr	r3, [r3]
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         nmem->used == 0 &&
+  49              		.loc 1 155 0
+  50 0014 9342     		cmp	r3, r2
+  51 0016 09D0     		beq	.L2
+ 157:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 158:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* if mem->next is unused and not end of heap_ptr,
+ 159:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****          * combine mem and mem->next
+ 160:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****          */
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         if (lfree == nmem)
+  52              		.loc 1 161 0
+  53 0018 124B     		ldr	r3, .L8+8
+  54 001a 1B68     		ldr	r3, [r3]
+  55 001c 9342     		cmp	r3, r2
+  56 001e 16D0     		beq	.L6
+  57              	.L3:
+ 162:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 163:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             lfree = mem;
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+ 165:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem->next = nmem->next;
+  58              		.loc 1 165 0
+  59 0020 5368     		ldr	r3, [r2, #4]
+  60 0022 4360     		str	r3, [r0, #4]
+ 166:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         ((struct heap_mem *)&heap_ptr[nmem->next])->prev = (rt_uint8_t *)mem - heap_ptr;
+  61              		.loc 1 166 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 5
+
+
+  62 0024 5368     		ldr	r3, [r2, #4]
+  63 0026 0B44     		add	r3, r3, r1
+  64 0028 421A     		subs	r2, r0, r1
+  65              	.LVL2:
+  66 002a 9A60     		str	r2, [r3, #8]
+  67              	.L2:
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 168:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* plug hole backward */
+ 170:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     pmem = (struct heap_mem *)&heap_ptr[mem->prev];
+  68              		.loc 1 170 0
+  69 002c 8368     		ldr	r3, [r0, #8]
+  70 002e 0B44     		add	r3, r3, r1
+  71              	.LVL3:
+ 171:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (pmem != mem && pmem->used == 0)
+  72              		.loc 1 171 0
+  73 0030 9842     		cmp	r0, r3
+  74 0032 0BD0     		beq	.L1
+  75              		.loc 1 171 0 is_stmt 0 discriminator 1
+  76 0034 5A88     		ldrh	r2, [r3, #2]
+  77 0036 4AB9     		cbnz	r2, .L1
+ 172:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 173:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* if mem->prev is unused, combine mem and mem->prev */
+ 174:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         if (lfree == mem)
+  78              		.loc 1 174 0 is_stmt 1
+  79 0038 0A4A     		ldr	r2, .L8+8
+  80 003a 1268     		ldr	r2, [r2]
+  81 003c 8242     		cmp	r2, r0
+  82 003e 09D0     		beq	.L7
+  83              	.L5:
+ 175:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             lfree = pmem;
+ 177:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+ 178:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         pmem->next = mem->next;
+  84              		.loc 1 178 0
+  85 0040 4268     		ldr	r2, [r0, #4]
+  86 0042 5A60     		str	r2, [r3, #4]
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         ((struct heap_mem *)&heap_ptr[mem->next])->prev = (rt_uint8_t *)pmem - heap_ptr;
+  87              		.loc 1 179 0
+  88 0044 4268     		ldr	r2, [r0, #4]
+  89 0046 0A44     		add	r2, r2, r1
+  90 0048 5B1A     		subs	r3, r3, r1
+  91              	.LVL4:
+  92 004a 9360     		str	r3, [r2, #8]
+  93              	.L1:
+ 180:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 181:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+  94              		.loc 1 181 0
+  95 004c 7047     		bx	lr
+  96              	.LVL5:
+  97              	.L6:
+ 163:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+  98              		.loc 1 163 0
+  99 004e 054B     		ldr	r3, .L8+8
+ 100 0050 1860     		str	r0, [r3]
+ 101 0052 E5E7     		b	.L3
+ 102              	.LVL6:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 6
+
+
+ 103              	.L7:
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+ 104              		.loc 1 176 0
+ 105 0054 034A     		ldr	r2, .L8+8
+ 106 0056 1360     		str	r3, [r2]
+ 107 0058 F2E7     		b	.L5
+ 108              	.L9:
+ 109 005a 00BF     		.align	2
+ 110              	.L8:
+ 111 005c 00000000 		.word	.LANCHOR0
+ 112 0060 00000000 		.word	.LANCHOR1
+ 113 0064 00000000 		.word	.LANCHOR2
+ 114              		.cfi_endproc
+ 115              	.LFE15:
+ 117              		.section	.text.rt_system_heap_init,"ax",%progbits
+ 118              		.align	1
+ 119              		.global	rt_system_heap_init
+ 120              		.syntax unified
+ 121              		.thumb
+ 122              		.thumb_func
+ 123              		.fpu fpv4-sp-d16
+ 125              	rt_system_heap_init:
+ 126              	.LFB16:
+ 182:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 183:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+ 184:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @ingroup SystemInit
+ 185:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 186:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This function will initialize system heap memory.
+ 187:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 188:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param begin_addr the beginning address of system heap memory.
+ 189:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param end_addr the end address of system heap memory.
+ 190:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+ 191:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void rt_system_heap_init(void *begin_addr, void *end_addr)
+ 192:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 127              		.loc 1 192 0
+ 128              		.cfi_startproc
+ 129              		@ args = 0, pretend = 0, frame = 0
+ 130              		@ frame_needed = 0, uses_anonymous_args = 0
+ 131              	.LVL7:
+ 132 0000 70B5     		push	{r4, r5, r6, lr}
+ 133              	.LCFI0:
+ 134              		.cfi_def_cfa_offset 16
+ 135              		.cfi_offset 4, -16
+ 136              		.cfi_offset 5, -12
+ 137              		.cfi_offset 6, -8
+ 138              		.cfi_offset 14, -4
+ 139              	.LVL8:
+ 193:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *mem;
+ 194:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_uint32_t begin_align = RT_ALIGN((rt_uint32_t)begin_addr, RT_ALIGN_SIZE);
+ 195:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_uint32_t end_align = RT_ALIGN_DOWN((rt_uint32_t)end_addr, RT_ALIGN_SIZE);
+ 140              		.loc 1 195 0
+ 141 0002 21F00303 		bic	r3, r1, #3
+ 142              	.LVL9:
+ 196:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 197:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_DEBUG_NOT_IN_INTERRUPT;
+ 198:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 199:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* alignment addr */
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 7
+
+
+ 200:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if ((end_align > (2 * SIZEOF_STRUCT_MEM)) &&
+ 143              		.loc 1 200 0
+ 144 0006 182B     		cmp	r3, #24
+ 145 0008 06D9     		bls	.L11
+ 146 000a C41C     		adds	r4, r0, #3
+ 147              	.LVL10:
+ 148 000c 24F00304 		bic	r4, r4, #3
+ 149              	.LVL11:
+ 201:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         ((end_align - 2 * SIZEOF_STRUCT_MEM) >= begin_align))
+ 150              		.loc 1 201 0 discriminator 1
+ 151 0010 A3F11802 		sub	r2, r3, #24
+ 200:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         ((end_align - 2 * SIZEOF_STRUCT_MEM) >= begin_align))
+ 152              		.loc 1 200 0 discriminator 1
+ 153 0014 A242     		cmp	r2, r4
+ 154 0016 05D2     		bcs	.L14
+ 155              	.L11:
+ 202:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 203:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* calculate the aligned memory size */
+ 204:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem_size_aligned = end_align - begin_align - 2 * SIZEOF_STRUCT_MEM;
+ 205:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 206:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     else
+ 207:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 208:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_kprintf("mem init, error begin address 0x%x, and end address 0x%x\n",
+ 156              		.loc 1 208 0
+ 157 0018 0A46     		mov	r2, r1
+ 158 001a 0146     		mov	r1, r0
+ 159              	.LVL12:
+ 160 001c 1148     		ldr	r0, .L15
+ 161              	.LVL13:
+ 162 001e FFF7FEFF 		bl	rt_kprintf
+ 163              	.LVL14:
+ 164              	.L10:
+ 209:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                    (rt_uint32_t)begin_addr, (rt_uint32_t)end_addr);
+ 210:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 211:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return;
+ 212:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 213:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 214:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* point to begin address of heap */
+ 215:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_ptr = (rt_uint8_t *)begin_align;
+ 216:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 217:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_DEBUG_LOG(RT_DEBUG_MEM, ("mem init, heap begin address 0x%x, size %d\n",
+ 218:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                                 (rt_uint32_t)heap_ptr, mem_size_aligned));
+ 219:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 220:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* initialize the start of the heap */
+ 221:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem        = (struct heap_mem *)heap_ptr;
+ 222:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->magic = HEAP_MAGIC;
+ 223:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->next  = mem_size_aligned + SIZEOF_STRUCT_MEM;
+ 224:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->prev  = 0;
+ 225:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->used  = 0;
+ 226:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 227:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_mem_setname(mem, "INIT");
+ 228:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 229:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 230:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* initialize the end of the heap */
+ 231:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end        = (struct heap_mem *)&heap_ptr[mem->next];
+ 232:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->magic = HEAP_MAGIC;
+ 233:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->used  = 1;
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 8
+
+
+ 234:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->next  = mem_size_aligned + SIZEOF_STRUCT_MEM;
+ 235:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->prev  = mem_size_aligned + SIZEOF_STRUCT_MEM;
+ 236:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 237:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_mem_setname(heap_end, "INIT");
+ 238:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 239:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 240:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_init(&heap_sem, "heap", 1, RT_IPC_FLAG_FIFO);
+ 241:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 242:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* initialize the lowest-free pointer to the start of the heap */
+ 243:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     lfree = (struct heap_mem *)heap_ptr;
+ 244:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 165              		.loc 1 244 0
+ 166 0022 70BD     		pop	{r4, r5, r6, pc}
+ 167              	.LVL15:
+ 168              	.L14:
+ 204:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 169              		.loc 1 204 0
+ 170 0024 1B1B     		subs	r3, r3, r4
+ 171              	.LVL16:
+ 172 0026 A3F11801 		sub	r1, r3, #24
+ 173              	.LVL17:
+ 174 002a 0F4A     		ldr	r2, .L15+4
+ 175              	.LVL18:
+ 176 002c 1160     		str	r1, [r2]
+ 215:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 177              		.loc 1 215 0
+ 178 002e 0F4D     		ldr	r5, .L15+8
+ 179 0030 2C60     		str	r4, [r5]
+ 180              	.LVL19:
+ 222:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->next  = mem_size_aligned + SIZEOF_STRUCT_MEM;
+ 181              		.loc 1 222 0
+ 182 0032 4FF4F552 		mov	r2, #7840
+ 183 0036 2280     		strh	r2, [r4]	@ movhi
+ 223:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->prev  = 0;
+ 184              		.loc 1 223 0
+ 185 0038 A3F10C01 		sub	r1, r3, #12
+ 186 003c 6160     		str	r1, [r4, #4]
+ 224:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->used  = 0;
+ 187              		.loc 1 224 0
+ 188 003e 0023     		movs	r3, #0
+ 189 0040 A360     		str	r3, [r4, #8]
+ 225:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 190              		.loc 1 225 0
+ 191 0042 6380     		strh	r3, [r4, #2]	@ movhi
+ 231:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->magic = HEAP_MAGIC;
+ 192              		.loc 1 231 0
+ 193 0044 6018     		adds	r0, r4, r1
+ 194              	.LVL20:
+ 195 0046 0A4E     		ldr	r6, .L15+12
+ 196 0048 3060     		str	r0, [r6]
+ 232:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->used  = 1;
+ 197              		.loc 1 232 0
+ 198 004a 6252     		strh	r2, [r4, r1]	@ movhi
+ 233:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->next  = mem_size_aligned + SIZEOF_STRUCT_MEM;
+ 199              		.loc 1 233 0
+ 200 004c 0122     		movs	r2, #1
+ 201 004e 4280     		strh	r2, [r0, #2]	@ movhi
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 9
+
+
+ 234:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     heap_end->prev  = mem_size_aligned + SIZEOF_STRUCT_MEM;
+ 202              		.loc 1 234 0
+ 203 0050 4160     		str	r1, [r0, #4]
+ 235:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 204              		.loc 1 235 0
+ 205 0052 8160     		str	r1, [r0, #8]
+ 240:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 206              		.loc 1 240 0
+ 207 0054 0749     		ldr	r1, .L15+16
+ 208 0056 0848     		ldr	r0, .L15+20
+ 209 0058 FFF7FEFF 		bl	rt_sem_init
+ 210              	.LVL21:
+ 243:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 211              		.loc 1 243 0
+ 212 005c 2A68     		ldr	r2, [r5]
+ 213 005e 074B     		ldr	r3, .L15+24
+ 214 0060 1A60     		str	r2, [r3]
+ 215 0062 DEE7     		b	.L10
+ 216              	.L16:
+ 217              		.align	2
+ 218              	.L15:
+ 219 0064 08000000 		.word	.LC1
+ 220 0068 00000000 		.word	.LANCHOR3
+ 221 006c 00000000 		.word	.LANCHOR0
+ 222 0070 00000000 		.word	.LANCHOR1
+ 223 0074 00000000 		.word	.LC0
+ 224 0078 00000000 		.word	.LANCHOR4
+ 225 007c 00000000 		.word	.LANCHOR2
+ 226              		.cfi_endproc
+ 227              	.LFE16:
+ 229              		.section	.text.rt_malloc,"ax",%progbits
+ 230              		.align	1
+ 231              		.global	rt_malloc
+ 232              		.syntax unified
+ 233              		.thumb
+ 234              		.thumb_func
+ 235              		.fpu fpv4-sp-d16
+ 237              	rt_malloc:
+ 238              	.LFB17:
+ 245:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 246:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+ 247:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @addtogroup MM
+ 248:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+ 249:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 250:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**@{*/
+ 251:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 252:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+ 253:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * Allocate a block of memory with a minimum of 'size' bytes.
+ 254:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 255:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param size is the minimum size of the requested block in bytes.
+ 256:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 257:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @return pointer to allocated memory or NULL if no free memory was found.
+ 258:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+ 259:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void *rt_malloc(rt_size_t size)
+ 260:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 239              		.loc 1 260 0
+ 240              		.cfi_startproc
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 10
+
+
+ 241              		@ args = 0, pretend = 0, frame = 0
+ 242              		@ frame_needed = 0, uses_anonymous_args = 0
+ 243              	.LVL22:
+ 261:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_size_t ptr, ptr2;
+ 262:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *mem, *mem2;
+ 263:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 264:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (size == 0)
+ 244              		.loc 1 264 0
+ 245 0000 0028     		cmp	r0, #0
+ 246 0002 79D0     		beq	.L29
+ 260:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_size_t ptr, ptr2;
+ 247              		.loc 1 260 0
+ 248 0004 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 249              	.LCFI1:
+ 250              		.cfi_def_cfa_offset 24
+ 251              		.cfi_offset 3, -24
+ 252              		.cfi_offset 4, -20
+ 253              		.cfi_offset 5, -16
+ 254              		.cfi_offset 6, -12
+ 255              		.cfi_offset 7, -8
+ 256              		.cfi_offset 14, -4
+ 257 0006 0546     		mov	r5, r0
+ 265:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return RT_NULL;
+ 266:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 267:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_DEBUG_NOT_IN_INTERRUPT;
+ 268:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 269:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (size != RT_ALIGN(size, RT_ALIGN_SIZE))
+ 258              		.loc 1 269 0
+ 259 0008 0335     		adds	r5, r5, #3
+ 260 000a 25F00305 		bic	r5, r5, #3
+ 261              	.LVL23:
+ 270:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         RT_DEBUG_LOG(RT_DEBUG_MEM, ("malloc size %d, but align to %d\n",
+ 271:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                                     size, RT_ALIGN(size, RT_ALIGN_SIZE)));
+ 272:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     else
+ 273:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         RT_DEBUG_LOG(RT_DEBUG_MEM, ("malloc size %d\n", size));
+ 274:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 275:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* alignment size */
+ 276:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     size = RT_ALIGN(size, RT_ALIGN_SIZE);
+ 277:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 278:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (size > mem_size_aligned)
+ 262              		.loc 1 278 0
+ 263 000e 3C4B     		ldr	r3, .L37
+ 264 0010 1B68     		ldr	r3, [r3]
+ 265 0012 9D42     		cmp	r5, r3
+ 266 0014 72D8     		bhi	.L30
+ 279:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 280:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         RT_DEBUG_LOG(RT_DEBUG_MEM, ("no memory\n"));
+ 281:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 282:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return RT_NULL;
+ 283:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 284:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 285:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* every data block must be at least MIN_SIZE_ALIGNED long */
+ 286:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (size < MIN_SIZE_ALIGNED)
+ 267              		.loc 1 286 0
+ 268 0016 0B2D     		cmp	r5, #11
+ 269 0018 00D8     		bhi	.L19
+ 287:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         size = MIN_SIZE_ALIGNED;
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 11
+
+
+ 270              		.loc 1 287 0
+ 271 001a 0C25     		movs	r5, #12
+ 272              	.LVL24:
+ 273              	.L19:
+ 288:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 289:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* take memory semaphore */
+ 290:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_take(&heap_sem, RT_WAITING_FOREVER);
+ 274              		.loc 1 290 0
+ 275 001c 4FF0FF31 		mov	r1, #-1
+ 276 0020 3848     		ldr	r0, .L37+4
+ 277 0022 FFF7FEFF 		bl	rt_sem_take
+ 278              	.LVL25:
+ 291:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 292:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     for (ptr = (rt_uint8_t *)lfree - heap_ptr;
+ 279              		.loc 1 292 0
+ 280 0026 384B     		ldr	r3, .L37+8
+ 281 0028 1E68     		ldr	r6, [r3]
+ 282 002a 384B     		ldr	r3, .L37+12
+ 283 002c 1B68     		ldr	r3, [r3]
+ 284 002e 9B1B     		subs	r3, r3, r6
+ 285              	.LVL26:
+ 286 0030 1FE0     		b	.L20
+ 287              	.LVL27:
+ 288              	.L22:
+ 293:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****          ptr < mem_size_aligned - size;
+ 294:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****          ptr = ((struct heap_mem *)&heap_ptr[ptr])->next)
+ 295:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 296:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem = (struct heap_mem *)&heap_ptr[ptr];
+ 297:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 298:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         if ((!mem->used) && (mem->next - (ptr + SIZEOF_STRUCT_MEM)) >= size)
+ 299:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 300:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             /* mem is not used and at least perfect fit is possible:
+ 301:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****              * mem->next - (ptr + SIZEOF_STRUCT_MEM) gives us the 'user data size' of mem */
+ 302:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 303:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             if (mem->next - (ptr + SIZEOF_STRUCT_MEM) >=
+ 304:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 (size + SIZEOF_STRUCT_MEM + MIN_SIZE_ALIGNED))
+ 305:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             {
+ 306:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 /* (in addition to the above, we test if another struct heap_mem (SIZEOF_STRUCT_MEM
+ 307:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * at least MIN_SIZE_ALIGNED of data also fits in the 'user data space' of 'mem')
+ 308:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * -> split large block, create empty remainder,
+ 309:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * remainder must be large enough to contain MIN_SIZE_ALIGNED data: if
+ 310:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * mem->next - (ptr + (2*SIZEOF_STRUCT_MEM)) == size,
+ 311:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * struct heap_mem would fit in but no data between mem2 and mem2->next
+ 312:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * @todo we could leave out MIN_SIZE_ALIGNED. We would create an empty
+ 313:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  *       region that couldn't hold data, but when mem->next gets freed,
+ 314:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  *       the 2 regions would be combined, resulting in more free memory
+ 315:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  */
+ 316:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 ptr2 = ptr + SIZEOF_STRUCT_MEM + size;
+ 317:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 318:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 /* create mem2 struct */
+ 319:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2       = (struct heap_mem *)&heap_ptr[ptr2];
+ 320:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->magic = HEAP_MAGIC;
+ 321:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->used = 0;
+ 322:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->next = mem->next;
+ 323:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->prev = ptr;
+ 324:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 325:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 rt_mem_setname(mem2, "    ");
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 12
+
+
+ 326:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 327:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 328:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 /* and insert it between mem and mem->next */
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem->next = ptr2;
+ 330:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem->used = 1;
+ 331:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 332:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 if (mem2->next != mem_size_aligned + SIZEOF_STRUCT_MEM)
+ 333:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 {
+ 334:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     ((struct heap_mem *)&heap_ptr[mem2->next])->prev = ptr2;
+ 335:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 }
+ 336:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_MEM_STATS
+ 337:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 used_mem += (size + SIZEOF_STRUCT_MEM);
+ 338:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 if (max_mem < used_mem)
+ 339:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     max_mem = used_mem;
+ 340:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 341:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             }
+ 342:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             else
+ 343:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             {
+ 344:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 /* (a mem2 struct does no fit into the user data space of mem and mem->next will al
+ 345:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * be used at this point: if not we have 2 unused structs in a row, plug_holes shou
+ 346:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * take care of this).
+ 347:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * -> near fit or excact fit: do not split, no mem2 creation
+ 348:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * also can't move mem->next directly behind mem, since mem->next
+ 349:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  * will always be used at this point!
+ 350:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  */
+ 351:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem->used = 1;
+ 289              		.loc 1 351 0
+ 290 0032 0123     		movs	r3, #1
+ 291              	.LVL28:
+ 292 0034 6380     		strh	r3, [r4, #2]	@ movhi
+ 352:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_MEM_STATS
+ 353:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 used_mem += mem->next - ((rt_uint8_t *)mem - heap_ptr);
+ 293              		.loc 1 353 0
+ 294 0036 A31B     		subs	r3, r4, r6
+ 295 0038 C31A     		subs	r3, r0, r3
+ 296 003a 354A     		ldr	r2, .L37+16
+ 297 003c 1068     		ldr	r0, [r2]
+ 298 003e 0344     		add	r3, r3, r0
+ 299 0040 1360     		str	r3, [r2]
+ 354:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 if (max_mem < used_mem)
+ 300              		.loc 1 354 0
+ 301 0042 344A     		ldr	r2, .L37+20
+ 302 0044 1268     		ldr	r2, [r2]
+ 303 0046 9342     		cmp	r3, r2
+ 304 0048 44D9     		bls	.L24
+ 355:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     max_mem = used_mem;
+ 305              		.loc 1 355 0
+ 306 004a 324A     		ldr	r2, .L37+20
+ 307 004c 1360     		str	r3, [r2]
+ 308 004e 41E0     		b	.L24
+ 309              	.LVL29:
+ 310              	.L27:
+ 356:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 357:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             }
+ 358:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             /* set memory block magic */
+ 359:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             mem->magic = HEAP_MAGIC;
+ 360:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 13
+
+
+ 361:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             if (rt_thread_self())
+ 362:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 rt_mem_setname(mem, rt_thread_self()->name);
+ 363:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             else
+ 364:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 rt_mem_setname(mem, "NONE");
+ 365:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 366:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 367:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             if (mem == lfree)
+ 368:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             {
+ 369:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 /* Find next free block after mem and update lowest free pointer */
+ 370:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 while (lfree->used && lfree != heap_end)
+ 371:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     lfree = (struct heap_mem *)&heap_ptr[lfree->next];
+ 311              		.loc 1 371 0
+ 312 0050 5A68     		ldr	r2, [r3, #4]
+ 313 0052 2D4B     		ldr	r3, .L37+8
+ 314 0054 1B68     		ldr	r3, [r3]
+ 315 0056 1344     		add	r3, r3, r2
+ 316 0058 2C4A     		ldr	r2, .L37+12
+ 317 005a 1360     		str	r3, [r2]
+ 318              	.L25:
+ 370:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     lfree = (struct heap_mem *)&heap_ptr[lfree->next];
+ 319              		.loc 1 370 0
+ 320 005c 2B4B     		ldr	r3, .L37+12
+ 321 005e 1B68     		ldr	r3, [r3]
+ 322 0060 5A88     		ldrh	r2, [r3, #2]
+ 323 0062 002A     		cmp	r2, #0
+ 324 0064 3DD0     		beq	.L26
+ 370:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     lfree = (struct heap_mem *)&heap_ptr[lfree->next];
+ 325              		.loc 1 370 0 is_stmt 0 discriminator 1
+ 326 0066 2C4A     		ldr	r2, .L37+24
+ 327 0068 1268     		ldr	r2, [r2]
+ 328 006a 9342     		cmp	r3, r2
+ 329 006c F0D1     		bne	.L27
+ 330 006e 38E0     		b	.L26
+ 331              	.LVL30:
+ 332              	.L21:
+ 294:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 333              		.loc 1 294 0 is_stmt 1
+ 334 0070 6368     		ldr	r3, [r4, #4]
+ 335              	.LVL31:
+ 336              	.L20:
+ 293:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****          ptr = ((struct heap_mem *)&heap_ptr[ptr])->next)
+ 337              		.loc 1 293 0 discriminator 1
+ 338 0072 234A     		ldr	r2, .L37
+ 339 0074 1268     		ldr	r2, [r2]
+ 340 0076 511B     		subs	r1, r2, r5
+ 292:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****          ptr < mem_size_aligned - size;
+ 341              		.loc 1 292 0 discriminator 1
+ 342 0078 9942     		cmp	r1, r3
+ 343 007a 38D9     		bls	.L36
+ 296:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 344              		.loc 1 296 0
+ 345 007c F418     		adds	r4, r6, r3
+ 346              	.LVL32:
+ 298:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 347              		.loc 1 298 0
+ 348 007e 6188     		ldrh	r1, [r4, #2]
+ 349 0080 0029     		cmp	r1, #0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 14
+
+
+ 350 0082 F5D1     		bne	.L21
+ 298:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 351              		.loc 1 298 0 is_stmt 0 discriminator 1
+ 352 0084 6068     		ldr	r0, [r4, #4]
+ 353 0086 C11A     		subs	r1, r0, r3
+ 354 0088 0C39     		subs	r1, r1, #12
+ 355 008a A942     		cmp	r1, r5
+ 356 008c F0D3     		bcc	.L21
+ 304:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             {
+ 357              		.loc 1 304 0 is_stmt 1
+ 358 008e 05F11807 		add	r7, r5, #24
+ 303:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 (size + SIZEOF_STRUCT_MEM + MIN_SIZE_ALIGNED))
+ 359              		.loc 1 303 0
+ 360 0092 B942     		cmp	r1, r7
+ 361 0094 CDD3     		bcc	.L22
+ 316:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 362              		.loc 1 316 0
+ 363 0096 E918     		adds	r1, r5, r3
+ 364 0098 0C31     		adds	r1, r1, #12
+ 365              	.LVL33:
+ 319:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->magic = HEAP_MAGIC;
+ 366              		.loc 1 319 0
+ 367 009a 7018     		adds	r0, r6, r1
+ 368              	.LVL34:
+ 320:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->used = 0;
+ 369              		.loc 1 320 0
+ 370 009c 4FF4F557 		mov	r7, #7840
+ 371 00a0 7752     		strh	r7, [r6, r1]	@ movhi
+ 321:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->next = mem->next;
+ 372              		.loc 1 321 0
+ 373 00a2 0027     		movs	r7, #0
+ 374 00a4 4780     		strh	r7, [r0, #2]	@ movhi
+ 322:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem2->prev = ptr;
+ 375              		.loc 1 322 0
+ 376 00a6 6768     		ldr	r7, [r4, #4]
+ 377 00a8 4760     		str	r7, [r0, #4]
+ 323:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 378              		.loc 1 323 0
+ 379 00aa 8360     		str	r3, [r0, #8]
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 mem->used = 1;
+ 380              		.loc 1 329 0
+ 381 00ac 6160     		str	r1, [r4, #4]
+ 330:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 382              		.loc 1 330 0
+ 383 00ae 0123     		movs	r3, #1
+ 384              	.LVL35:
+ 385 00b0 6380     		strh	r3, [r4, #2]	@ movhi
+ 332:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 {
+ 386              		.loc 1 332 0
+ 387 00b2 4368     		ldr	r3, [r0, #4]
+ 388 00b4 0C32     		adds	r2, r2, #12
+ 389 00b6 9342     		cmp	r3, r2
+ 390 00b8 01D0     		beq	.L23
+ 334:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 }
+ 391              		.loc 1 334 0
+ 392 00ba 3344     		add	r3, r3, r6
+ 393 00bc 9960     		str	r1, [r3, #8]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 15
+
+
+ 394              	.L23:
+ 337:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 if (max_mem < used_mem)
+ 395              		.loc 1 337 0
+ 396 00be 144B     		ldr	r3, .L37+16
+ 397 00c0 1A68     		ldr	r2, [r3]
+ 398 00c2 1544     		add	r5, r5, r2
+ 399              	.LVL36:
+ 400 00c4 0C35     		adds	r5, r5, #12
+ 401 00c6 1D60     		str	r5, [r3]
+ 338:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     max_mem = used_mem;
+ 402              		.loc 1 338 0
+ 403 00c8 124B     		ldr	r3, .L37+20
+ 404 00ca 1B68     		ldr	r3, [r3]
+ 405 00cc 9D42     		cmp	r5, r3
+ 406 00ce 01D9     		bls	.L24
+ 339:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 407              		.loc 1 339 0
+ 408 00d0 104B     		ldr	r3, .L37+20
+ 409 00d2 1D60     		str	r5, [r3]
+ 410              	.LVL37:
+ 411              	.L24:
+ 359:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 412              		.loc 1 359 0
+ 413 00d4 4FF4F553 		mov	r3, #7840
+ 414 00d8 2380     		strh	r3, [r4]	@ movhi
+ 367:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             {
+ 415              		.loc 1 367 0
+ 416 00da 0C4B     		ldr	r3, .L37+12
+ 417 00dc 1B68     		ldr	r3, [r3]
+ 418 00de A342     		cmp	r3, r4
+ 419 00e0 BCD0     		beq	.L25
+ 420              	.L26:
+ 372:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 373:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                 RT_ASSERT(((lfree == heap_end) || (!lfree->used)));
+ 374:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             }
+ 375:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 376:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             rt_sem_release(&heap_sem);
+ 421              		.loc 1 376 0
+ 422 00e2 0848     		ldr	r0, .L37+4
+ 423 00e4 FFF7FEFF 		bl	rt_sem_release
+ 424              	.LVL38:
+ 377:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             RT_ASSERT((rt_uint32_t)mem + SIZEOF_STRUCT_MEM + size <= (rt_uint32_t)heap_end);
+ 378:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             RT_ASSERT((rt_uint32_t)((rt_uint8_t *)mem + SIZEOF_STRUCT_MEM) % RT_ALIGN_SIZE == 0);
+ 379:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             RT_ASSERT((((rt_uint32_t)mem) & (RT_ALIGN_SIZE - 1)) == 0);
+ 380:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 381:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             RT_DEBUG_LOG(RT_DEBUG_MEM,
+ 382:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                          ("allocate memory at 0x%x, size: %d\n",
+ 383:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                           (rt_uint32_t)((rt_uint8_t *)mem + SIZEOF_STRUCT_MEM),
+ 384:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                           (rt_uint32_t)(mem->next - ((rt_uint8_t *)mem - heap_ptr))));
+ 385:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 386:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             RT_OBJECT_HOOK_CALL(rt_malloc_hook,
+ 387:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                                 (((void *)((rt_uint8_t *)mem + SIZEOF_STRUCT_MEM)), size));
+ 388:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 389:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             /* return the memory data except mem struct */
+ 390:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             return (rt_uint8_t *)mem + SIZEOF_STRUCT_MEM;
+ 425              		.loc 1 390 0
+ 426 00e8 04F10C00 		add	r0, r4, #12
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 16
+
+
+ 427 00ec 03E0     		b	.L17
+ 428              	.LVL39:
+ 429              	.L36:
+ 391:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+ 392:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 393:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 394:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_release(&heap_sem);
+ 430              		.loc 1 394 0
+ 431 00ee 0548     		ldr	r0, .L37+4
+ 432 00f0 FFF7FEFF 		bl	rt_sem_release
+ 433              	.LVL40:
+ 395:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 396:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     return RT_NULL;
+ 434              		.loc 1 396 0
+ 435 00f4 0020     		movs	r0, #0
+ 436              	.LVL41:
+ 437              	.L17:
+ 397:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 438              		.loc 1 397 0
+ 439 00f6 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 440              	.LVL42:
+ 441              	.L29:
+ 442              	.LCFI2:
+ 443              		.cfi_def_cfa_offset 0
+ 444              		.cfi_restore 3
+ 445              		.cfi_restore 4
+ 446              		.cfi_restore 5
+ 447              		.cfi_restore 6
+ 448              		.cfi_restore 7
+ 449              		.cfi_restore 14
+ 265:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 450              		.loc 1 265 0
+ 451 00f8 0020     		movs	r0, #0
+ 452              	.LVL43:
+ 453              		.loc 1 397 0
+ 454 00fa 7047     		bx	lr
+ 455              	.LVL44:
+ 456              	.L30:
+ 457              	.LCFI3:
+ 458              		.cfi_def_cfa_offset 24
+ 459              		.cfi_offset 3, -24
+ 460              		.cfi_offset 4, -20
+ 461              		.cfi_offset 5, -16
+ 462              		.cfi_offset 6, -12
+ 463              		.cfi_offset 7, -8
+ 464              		.cfi_offset 14, -4
+ 282:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 465              		.loc 1 282 0
+ 466 00fc 0020     		movs	r0, #0
+ 467 00fe FAE7     		b	.L17
+ 468              	.L38:
+ 469              		.align	2
+ 470              	.L37:
+ 471 0100 00000000 		.word	.LANCHOR3
+ 472 0104 00000000 		.word	.LANCHOR4
+ 473 0108 00000000 		.word	.LANCHOR0
+ 474 010c 00000000 		.word	.LANCHOR2
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 17
+
+
+ 475 0110 00000000 		.word	.LANCHOR5
+ 476 0114 00000000 		.word	.LANCHOR6
+ 477 0118 00000000 		.word	.LANCHOR1
+ 478              		.cfi_endproc
+ 479              	.LFE17:
+ 481              		.section	.text.rt_calloc,"ax",%progbits
+ 482              		.align	1
+ 483              		.global	rt_calloc
+ 484              		.syntax unified
+ 485              		.thumb
+ 486              		.thumb_func
+ 487              		.fpu fpv4-sp-d16
+ 489              	rt_calloc:
+ 490              	.LFB19:
+ 398:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** RTM_EXPORT(rt_malloc);
+ 399:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 400:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+ 401:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This function will change the previously allocated memory block.
+ 402:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 403:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param rmem pointer to memory allocated by rt_malloc
+ 404:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param newsize the required new size
+ 405:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 406:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @return the changed memory block address
+ 407:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+ 408:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void *rt_realloc(void *rmem, rt_size_t newsize)
+ 409:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 410:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_size_t size;
+ 411:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_size_t ptr, ptr2;
+ 412:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *mem, *mem2;
+ 413:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     void *nmem;
+ 414:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 415:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_DEBUG_NOT_IN_INTERRUPT;
+ 416:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 417:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* alignment size */
+ 418:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     newsize = RT_ALIGN(newsize, RT_ALIGN_SIZE);
+ 419:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (newsize > mem_size_aligned)
+ 420:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 421:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         RT_DEBUG_LOG(RT_DEBUG_MEM, ("realloc: out of memory\n"));
+ 422:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 423:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return RT_NULL;
+ 424:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 425:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     else if (newsize == 0)
+ 426:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 427:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_free(rmem);
+ 428:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return RT_NULL;
+ 429:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 430:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 431:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* allocate a new memory block */
+ 432:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (rmem == RT_NULL)
+ 433:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return rt_malloc(newsize);
+ 434:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 435:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_take(&heap_sem, RT_WAITING_FOREVER);
+ 436:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 437:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if ((rt_uint8_t *)rmem < (rt_uint8_t *)heap_ptr ||
+ 438:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         (rt_uint8_t *)rmem >= (rt_uint8_t *)heap_end)
+ 439:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 440:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* illegal memory */
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 18
+
+
+ 441:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_sem_release(&heap_sem);
+ 442:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 443:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return rmem;
+ 444:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 445:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 446:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem = (struct heap_mem *)((rt_uint8_t *)rmem - SIZEOF_STRUCT_MEM);
+ 447:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 448:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     ptr = (rt_uint8_t *)mem - heap_ptr;
+ 449:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     size = mem->next - ptr - SIZEOF_STRUCT_MEM;
+ 450:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (size == newsize)
+ 451:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 452:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* the size is the same as */
+ 453:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_sem_release(&heap_sem);
+ 454:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 455:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return rmem;
+ 456:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 457:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 458:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (newsize + SIZEOF_STRUCT_MEM + MIN_SIZE < size)
+ 459:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 460:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* split memory block */
+ 461:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_MEM_STATS
+ 462:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         used_mem -= (size - newsize);
+ 463:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 464:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 465:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         ptr2 = ptr + SIZEOF_STRUCT_MEM + newsize;
+ 466:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2 = (struct heap_mem *)&heap_ptr[ptr2];
+ 467:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->magic = HEAP_MAGIC;
+ 468:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->used = 0;
+ 469:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->next = mem->next;
+ 470:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->prev = ptr;
+ 471:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 472:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_mem_setname(mem2, "    ");
+ 473:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 474:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem->next = ptr2;
+ 475:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         if (mem2->next != mem_size_aligned + SIZEOF_STRUCT_MEM)
+ 476:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 477:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****             ((struct heap_mem *)&heap_ptr[mem2->next])->prev = ptr2;
+ 478:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+ 479:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 480:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         plug_holes(mem2);
+ 481:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 482:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_sem_release(&heap_sem);
+ 483:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 484:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return rmem;
+ 485:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 486:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_release(&heap_sem);
+ 487:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 488:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* expand memory */
+ 489:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     nmem = rt_malloc(newsize);
+ 490:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (nmem != RT_NULL) /* check memory */
+ 491:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 492:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_memcpy(nmem, rmem, size < newsize ? size : newsize);
+ 493:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_free(rmem);
+ 494:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 495:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 496:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     return nmem;
+ 497:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 19
+
+
+ 498:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** RTM_EXPORT(rt_realloc);
+ 499:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 500:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+ 501:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This function will contiguously allocate enough space for count objects
+ 502:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * that are size bytes of memory each and returns a pointer to the allocated
+ 503:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * memory.
+ 504:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 505:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * The allocated memory is filled with bytes of value zero.
+ 506:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 507:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param count number of objects to allocate
+ 508:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param size size of the objects to allocate
+ 509:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 510:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @return pointer to allocated memory / NULL pointer if there is an error
+ 511:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+ 512:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void *rt_calloc(rt_size_t count, rt_size_t size)
+ 513:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 491              		.loc 1 513 0
+ 492              		.cfi_startproc
+ 493              		@ args = 0, pretend = 0, frame = 0
+ 494              		@ frame_needed = 0, uses_anonymous_args = 0
+ 495              	.LVL45:
+ 496 0000 38B5     		push	{r3, r4, r5, lr}
+ 497              	.LCFI4:
+ 498              		.cfi_def_cfa_offset 16
+ 499              		.cfi_offset 3, -16
+ 500              		.cfi_offset 4, -12
+ 501              		.cfi_offset 5, -8
+ 502              		.cfi_offset 14, -4
+ 514:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     void *p;
+ 515:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 516:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* allocate 'count' objects of size 'size' */
+ 517:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     p = rt_malloc(count * size);
+ 503              		.loc 1 517 0
+ 504 0002 01FB00F5 		mul	r5, r1, r0
+ 505 0006 2846     		mov	r0, r5
+ 506              	.LVL46:
+ 507 0008 FFF7FEFF 		bl	rt_malloc
+ 508              	.LVL47:
+ 518:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 519:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* zero the memory */
+ 520:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (p)
+ 509              		.loc 1 520 0
+ 510 000c 0446     		mov	r4, r0
+ 511 000e 18B1     		cbz	r0, .L39
+ 521:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_memset(p, 0, count * size);
+ 512              		.loc 1 521 0
+ 513 0010 2A46     		mov	r2, r5
+ 514 0012 0021     		movs	r1, #0
+ 515 0014 FFF7FEFF 		bl	rt_memset
+ 516              	.LVL48:
+ 517              	.L39:
+ 522:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 523:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     return p;
+ 524:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 518              		.loc 1 524 0
+ 519 0018 2046     		mov	r0, r4
+ 520 001a 38BD     		pop	{r3, r4, r5, pc}
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 20
+
+
+ 521              		.cfi_endproc
+ 522              	.LFE19:
+ 524              		.section	.text.rt_free,"ax",%progbits
+ 525              		.align	1
+ 526              		.global	rt_free
+ 527              		.syntax unified
+ 528              		.thumb
+ 529              		.thumb_func
+ 530              		.fpu fpv4-sp-d16
+ 532              	rt_free:
+ 533              	.LFB20:
+ 525:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** RTM_EXPORT(rt_calloc);
+ 526:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 527:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** /**
+ 528:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * This function will release the previously allocated memory block by
+ 529:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * rt_malloc. The released memory block is taken back to system heap.
+ 530:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  *
+ 531:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  * @param rmem the address of memory which will be released
+ 532:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****  */
+ 533:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void rt_free(void *rmem)
+ 534:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 534              		.loc 1 534 0
+ 535              		.cfi_startproc
+ 536              		@ args = 0, pretend = 0, frame = 0
+ 537              		@ frame_needed = 0, uses_anonymous_args = 0
+ 538              	.LVL49:
+ 535:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *mem;
+ 536:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 537:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (rmem == RT_NULL)
+ 539              		.loc 1 537 0
+ 540 0000 0028     		cmp	r0, #0
+ 541 0002 42D0     		beq	.L48
+ 534:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     struct heap_mem *mem;
+ 542              		.loc 1 534 0
+ 543 0004 38B5     		push	{r3, r4, r5, lr}
+ 544              	.LCFI5:
+ 545              		.cfi_def_cfa_offset 16
+ 546              		.cfi_offset 3, -16
+ 547              		.cfi_offset 4, -12
+ 548              		.cfi_offset 5, -8
+ 549              		.cfi_offset 14, -4
+ 550 0006 0446     		mov	r4, r0
+ 538:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return;
+ 539:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 540:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_DEBUG_NOT_IN_INTERRUPT;
+ 541:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 542:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT((((rt_uint32_t)rmem) & (RT_ALIGN_SIZE - 1)) == 0);
+ 543:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT((rt_uint8_t *)rmem >= (rt_uint8_t *)heap_ptr &&
+ 544:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****               (rt_uint8_t *)rmem < (rt_uint8_t *)heap_end);
+ 545:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 546:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_OBJECT_HOOK_CALL(rt_free_hook, (rmem));
+ 547:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 548:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if ((rt_uint8_t *)rmem < (rt_uint8_t *)heap_ptr ||
+ 551              		.loc 1 548 0
+ 552 0008 204A     		ldr	r2, .L52
+ 553 000a 1268     		ldr	r2, [r2]
+ 554 000c 8242     		cmp	r2, r0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 21
+
+
+ 555 000e 03D8     		bhi	.L42
+ 549:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         (rt_uint8_t *)rmem >= (rt_uint8_t *)heap_end)
+ 556              		.loc 1 549 0 discriminator 1
+ 557 0010 1F4A     		ldr	r2, .L52+4
+ 558 0012 1268     		ldr	r2, [r2]
+ 548:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         (rt_uint8_t *)rmem >= (rt_uint8_t *)heap_end)
+ 559              		.loc 1 548 0 discriminator 1
+ 560 0014 8242     		cmp	r2, r0
+ 561 0016 00D8     		bhi	.L51
+ 562              	.LVL50:
+ 563              	.L42:
+ 550:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 551:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         RT_DEBUG_LOG(RT_DEBUG_MEM, ("illegal memory\n"));
+ 552:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 553:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return;
+ 554:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 555:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 556:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* Get the corresponding struct heap_mem ... */
+ 557:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem = (struct heap_mem *)((rt_uint8_t *)rmem - SIZEOF_STRUCT_MEM);
+ 558:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 559:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_DEBUG_LOG(RT_DEBUG_MEM,
+ 560:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                  ("release memory 0x%x, size: %d\n",
+ 561:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                   (rt_uint32_t)rmem,
+ 562:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                   (rt_uint32_t)(mem->next - ((rt_uint8_t *)mem - heap_ptr))));
+ 563:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 564:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 565:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* protect the heap from concurrent access */
+ 566:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_take(&heap_sem, RT_WAITING_FOREVER);
+ 567:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 568:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* ... which has to be in a used state ... */
+ 569:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (!mem->used || mem->magic != HEAP_MAGIC)
+ 570:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 571:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_kprintf("to free a bad data block:\n");
+ 572:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_kprintf("mem: 0x%08x, used flag: %d, magic code: 0x%04x\n", mem, mem->used, mem->magic);
+ 573:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 574:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT(mem->used);
+ 575:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     RT_ASSERT(mem->magic == HEAP_MAGIC);
+ 576:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* ... and is now unused. */
+ 577:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->used  = 0;
+ 578:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->magic = HEAP_MAGIC;
+ 579:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 580:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_mem_setname(mem, "    ");
+ 581:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 582:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 583:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (mem < lfree)
+ 584:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 585:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         /* the newly freed struct is now the lowest */
+ 586:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         lfree = mem;
+ 587:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 588:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 589:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_MEM_STATS
+ 590:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     used_mem -= (mem->next - ((rt_uint8_t *)mem - heap_ptr));
+ 591:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 592:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 593:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     /* finally, see if prev or next are free also */
+ 594:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     plug_holes(mem);
+ 595:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_release(&heap_sem);
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 22
+
+
+ 596:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 564              		.loc 1 596 0
+ 565 0018 38BD     		pop	{r3, r4, r5, pc}
+ 566              	.LVL51:
+ 567              	.L51:
+ 557:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 568              		.loc 1 557 0
+ 569 001a A0F10C05 		sub	r5, r0, #12
+ 570              	.LVL52:
+ 566:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 571              		.loc 1 566 0
+ 572 001e 4FF0FF31 		mov	r1, #-1
+ 573 0022 1C48     		ldr	r0, .L52+8
+ 574              	.LVL53:
+ 575 0024 FFF7FEFF 		bl	rt_sem_take
+ 576              	.LVL54:
+ 569:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 577              		.loc 1 569 0
+ 578 0028 34F80A3C 		ldrh	r3, [r4, #-10]
+ 579 002c 23B1     		cbz	r3, .L44
+ 569:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 580              		.loc 1 569 0 is_stmt 0 discriminator 1
+ 581 002e 34F80C3C 		ldrh	r3, [r4, #-12]
+ 582 0032 B3F5F55F 		cmp	r3, #7840
+ 583 0036 0AD0     		beq	.L45
+ 584              	.L44:
+ 571:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_kprintf("mem: 0x%08x, used flag: %d, magic code: 0x%04x\n", mem, mem->used, mem->magic);
+ 585              		.loc 1 571 0 is_stmt 1
+ 586 0038 1748     		ldr	r0, .L52+12
+ 587 003a FFF7FEFF 		bl	rt_kprintf
+ 588              	.LVL55:
+ 572:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 589              		.loc 1 572 0
+ 590 003e 34F80C3C 		ldrh	r3, [r4, #-12]
+ 591 0042 34F80A2C 		ldrh	r2, [r4, #-10]
+ 592 0046 2946     		mov	r1, r5
+ 593 0048 1448     		ldr	r0, .L52+16
+ 594 004a FFF7FEFF 		bl	rt_kprintf
+ 595              	.LVL56:
+ 596              	.L45:
+ 577:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     mem->magic = HEAP_MAGIC;
+ 597              		.loc 1 577 0
+ 598 004e 0023     		movs	r3, #0
+ 599 0050 24F80A3C 		strh	r3, [r4, #-10]	@ movhi
+ 578:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 600              		.loc 1 578 0
+ 601 0054 4FF4F553 		mov	r3, #7840
+ 602 0058 24F80C3C 		strh	r3, [r4, #-12]	@ movhi
+ 583:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 603              		.loc 1 583 0
+ 604 005c 104B     		ldr	r3, .L52+20
+ 605 005e 1B68     		ldr	r3, [r3]
+ 606 0060 AB42     		cmp	r3, r5
+ 607 0062 01D9     		bls	.L46
+ 586:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 608              		.loc 1 586 0
+ 609 0064 0E4B     		ldr	r3, .L52+20
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 23
+
+
+ 610 0066 1D60     		str	r5, [r3]
+ 611              	.L46:
+ 590:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 612              		.loc 1 590 0
+ 613 0068 084B     		ldr	r3, .L52
+ 614 006a 1B68     		ldr	r3, [r3]
+ 615 006c EB1A     		subs	r3, r5, r3
+ 616 006e 54F8082C 		ldr	r2, [r4, #-8]
+ 617 0072 9B1A     		subs	r3, r3, r2
+ 618 0074 0B49     		ldr	r1, .L52+24
+ 619 0076 0A68     		ldr	r2, [r1]
+ 620 0078 1344     		add	r3, r3, r2
+ 621 007a 0B60     		str	r3, [r1]
+ 594:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_sem_release(&heap_sem);
+ 622              		.loc 1 594 0
+ 623 007c 2846     		mov	r0, r5
+ 624 007e FFF7FEFF 		bl	plug_holes
+ 625              	.LVL57:
+ 595:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 626              		.loc 1 595 0
+ 627 0082 0448     		ldr	r0, .L52+8
+ 628 0084 FFF7FEFF 		bl	rt_sem_release
+ 629              	.LVL58:
+ 630 0088 C6E7     		b	.L42
+ 631              	.LVL59:
+ 632              	.L48:
+ 633              	.LCFI6:
+ 634              		.cfi_def_cfa_offset 0
+ 635              		.cfi_restore 3
+ 636              		.cfi_restore 4
+ 637              		.cfi_restore 5
+ 638              		.cfi_restore 14
+ 639 008a 7047     		bx	lr
+ 640              	.L53:
+ 641              		.align	2
+ 642              	.L52:
+ 643 008c 00000000 		.word	.LANCHOR0
+ 644 0090 00000000 		.word	.LANCHOR1
+ 645 0094 00000000 		.word	.LANCHOR4
+ 646 0098 00000000 		.word	.LC2
+ 647 009c 1C000000 		.word	.LC3
+ 648 00a0 00000000 		.word	.LANCHOR2
+ 649 00a4 00000000 		.word	.LANCHOR5
+ 650              		.cfi_endproc
+ 651              	.LFE20:
+ 653              		.section	.text.rt_realloc,"ax",%progbits
+ 654              		.align	1
+ 655              		.global	rt_realloc
+ 656              		.syntax unified
+ 657              		.thumb
+ 658              		.thumb_func
+ 659              		.fpu fpv4-sp-d16
+ 661              	rt_realloc:
+ 662              	.LFB18:
+ 409:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     rt_size_t size;
+ 663              		.loc 1 409 0
+ 664              		.cfi_startproc
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 24
+
+
+ 665              		@ args = 0, pretend = 0, frame = 0
+ 666              		@ frame_needed = 0, uses_anonymous_args = 0
+ 667              	.LVL60:
+ 668 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 669              	.LCFI7:
+ 670              		.cfi_def_cfa_offset 24
+ 671              		.cfi_offset 3, -24
+ 672              		.cfi_offset 4, -20
+ 673              		.cfi_offset 5, -16
+ 674              		.cfi_offset 6, -12
+ 675              		.cfi_offset 7, -8
+ 676              		.cfi_offset 14, -4
+ 418:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (newsize > mem_size_aligned)
+ 677              		.loc 1 418 0
+ 678 0002 0331     		adds	r1, r1, #3
+ 679              	.LVL61:
+ 680 0004 21F00304 		bic	r4, r1, #3
+ 681              	.LVL62:
+ 419:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 682              		.loc 1 419 0
+ 683 0008 374B     		ldr	r3, .L68
+ 684 000a 1B68     		ldr	r3, [r3]
+ 685 000c A342     		cmp	r3, r4
+ 686 000e 68D3     		bcc	.L63
+ 687 0010 0546     		mov	r5, r0
+ 425:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 688              		.loc 1 425 0
+ 689 0012 002C     		cmp	r4, #0
+ 690 0014 3DD0     		beq	.L65
+ 432:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return rt_malloc(newsize);
+ 691              		.loc 1 432 0
+ 692 0016 0028     		cmp	r0, #0
+ 693 0018 3FD0     		beq	.L66
+ 435:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 694              		.loc 1 435 0
+ 695 001a 4FF0FF31 		mov	r1, #-1
+ 696 001e 3348     		ldr	r0, .L68+4
+ 697              	.LVL63:
+ 698 0020 FFF7FEFF 		bl	rt_sem_take
+ 699              	.LVL64:
+ 437:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         (rt_uint8_t *)rmem >= (rt_uint8_t *)heap_end)
+ 700              		.loc 1 437 0
+ 701 0024 324B     		ldr	r3, .L68+8
+ 702 0026 1B68     		ldr	r3, [r3]
+ 703 0028 AB42     		cmp	r3, r5
+ 704 002a 3BD8     		bhi	.L58
+ 438:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 705              		.loc 1 438 0 discriminator 1
+ 706 002c 314A     		ldr	r2, .L68+12
+ 707 002e 1268     		ldr	r2, [r2]
+ 437:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         (rt_uint8_t *)rmem >= (rt_uint8_t *)heap_end)
+ 708              		.loc 1 437 0 discriminator 1
+ 709 0030 AA42     		cmp	r2, r5
+ 710 0032 37D9     		bls	.L58
+ 446:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 711              		.loc 1 446 0
+ 712 0034 A5F10C02 		sub	r2, r5, #12
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 25
+
+
+ 713              	.LVL65:
+ 448:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     size = mem->next - ptr - SIZEOF_STRUCT_MEM;
+ 714              		.loc 1 448 0
+ 715 0038 D21A     		subs	r2, r2, r3
+ 716              	.LVL66:
+ 449:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (size == newsize)
+ 717              		.loc 1 449 0
+ 718 003a 55F8086C 		ldr	r6, [r5, #-8]
+ 719 003e B61A     		subs	r6, r6, r2
+ 720 0040 0C3E     		subs	r6, r6, #12
+ 721              	.LVL67:
+ 450:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 722              		.loc 1 450 0
+ 723 0042 B442     		cmp	r4, r6
+ 724 0044 34D0     		beq	.L67
+ 458:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 725              		.loc 1 458 0
+ 726 0046 04F11801 		add	r1, r4, #24
+ 727 004a B142     		cmp	r1, r6
+ 728 004c 35D2     		bcs	.L61
+ 462:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #endif
+ 729              		.loc 1 462 0
+ 730 004e A61B     		subs	r6, r4, r6
+ 731              	.LVL68:
+ 732 0050 2948     		ldr	r0, .L68+16
+ 733 0052 0168     		ldr	r1, [r0]
+ 734 0054 0E44     		add	r6, r6, r1
+ 735 0056 0660     		str	r6, [r0]
+ 465:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2 = (struct heap_mem *)&heap_ptr[ptr2];
+ 736              		.loc 1 465 0
+ 737 0058 1444     		add	r4, r4, r2
+ 738              	.LVL69:
+ 739 005a 0C34     		adds	r4, r4, #12
+ 740              	.LVL70:
+ 466:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->magic = HEAP_MAGIC;
+ 741              		.loc 1 466 0
+ 742 005c 1819     		adds	r0, r3, r4
+ 743              	.LVL71:
+ 467:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->used = 0;
+ 744              		.loc 1 467 0
+ 745 005e 4FF4F551 		mov	r1, #7840
+ 746 0062 1953     		strh	r1, [r3, r4]	@ movhi
+ 747              	.LVL72:
+ 468:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->next = mem->next;
+ 748              		.loc 1 468 0
+ 749 0064 0021     		movs	r1, #0
+ 750 0066 4180     		strh	r1, [r0, #2]	@ movhi
+ 469:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         mem2->prev = ptr;
+ 751              		.loc 1 469 0
+ 752 0068 55F8081C 		ldr	r1, [r5, #-8]
+ 753 006c 4160     		str	r1, [r0, #4]
+ 470:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_USING_MEMTRACE
+ 754              		.loc 1 470 0
+ 755 006e 8260     		str	r2, [r0, #8]
+ 474:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         if (mem2->next != mem_size_aligned + SIZEOF_STRUCT_MEM)
+ 756              		.loc 1 474 0
+ 757 0070 45F8084C 		str	r4, [r5, #-8]
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 26
+
+
+ 475:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         {
+ 758              		.loc 1 475 0
+ 759 0074 4168     		ldr	r1, [r0, #4]
+ 760 0076 1C4A     		ldr	r2, .L68
+ 761              	.LVL73:
+ 762 0078 1268     		ldr	r2, [r2]
+ 763 007a 0C32     		adds	r2, r2, #12
+ 764 007c 9142     		cmp	r1, r2
+ 765 007e 01D0     		beq	.L62
+ 477:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         }
+ 766              		.loc 1 477 0
+ 767 0080 0B44     		add	r3, r3, r1
+ 768              	.LVL74:
+ 769 0082 9C60     		str	r4, [r3, #8]
+ 770              	.L62:
+ 480:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 771              		.loc 1 480 0
+ 772 0084 FFF7FEFF 		bl	plug_holes
+ 773              	.LVL75:
+ 482:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 774              		.loc 1 482 0
+ 775 0088 1848     		ldr	r0, .L68+4
+ 776 008a FFF7FEFF 		bl	rt_sem_release
+ 777              	.LVL76:
+ 484:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 778              		.loc 1 484 0
+ 779 008e 2F46     		mov	r7, r5
+ 780 0090 0CE0     		b	.L54
+ 781              	.LVL77:
+ 782              	.L65:
+ 427:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         return RT_NULL;
+ 783              		.loc 1 427 0
+ 784 0092 FFF7FEFF 		bl	rt_free
+ 785              	.LVL78:
+ 428:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 786              		.loc 1 428 0
+ 787 0096 0027     		movs	r7, #0
+ 788 0098 08E0     		b	.L54
+ 789              	.LVL79:
+ 790              	.L66:
+ 433:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 791              		.loc 1 433 0
+ 792 009a 2046     		mov	r0, r4
+ 793              	.LVL80:
+ 794 009c FFF7FEFF 		bl	rt_malloc
+ 795              	.LVL81:
+ 796 00a0 0746     		mov	r7, r0
+ 797 00a2 03E0     		b	.L54
+ 798              	.L58:
+ 441:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 799              		.loc 1 441 0
+ 800 00a4 1148     		ldr	r0, .L68+4
+ 801 00a6 FFF7FEFF 		bl	rt_sem_release
+ 802              	.LVL82:
+ 443:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 803              		.loc 1 443 0
+ 804 00aa 2F46     		mov	r7, r5
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 27
+
+
+ 805              	.LVL83:
+ 806              	.L54:
+ 497:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** RTM_EXPORT(rt_realloc);
+ 807              		.loc 1 497 0
+ 808 00ac 3846     		mov	r0, r7
+ 809 00ae F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 810              	.LVL84:
+ 811              	.L67:
+ 453:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 812              		.loc 1 453 0
+ 813 00b0 0E48     		ldr	r0, .L68+4
+ 814 00b2 FFF7FEFF 		bl	rt_sem_release
+ 815              	.LVL85:
+ 455:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 816              		.loc 1 455 0
+ 817 00b6 2F46     		mov	r7, r5
+ 818 00b8 F8E7     		b	.L54
+ 819              	.LVL86:
+ 820              	.L61:
+ 486:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 821              		.loc 1 486 0
+ 822 00ba 0C48     		ldr	r0, .L68+4
+ 823 00bc FFF7FEFF 		bl	rt_sem_release
+ 824              	.LVL87:
+ 489:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (nmem != RT_NULL) /* check memory */
+ 825              		.loc 1 489 0
+ 826 00c0 2046     		mov	r0, r4
+ 827 00c2 FFF7FEFF 		bl	rt_malloc
+ 828              	.LVL88:
+ 490:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     {
+ 829              		.loc 1 490 0
+ 830 00c6 0746     		mov	r7, r0
+ 831 00c8 0028     		cmp	r0, #0
+ 832 00ca EFD0     		beq	.L54
+ 492:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         rt_free(rmem);
+ 833              		.loc 1 492 0
+ 834 00cc 2246     		mov	r2, r4
+ 835 00ce B442     		cmp	r4, r6
+ 836 00d0 28BF     		it	cs
+ 837 00d2 3246     		movcs	r2, r6
+ 838 00d4 2946     		mov	r1, r5
+ 839 00d6 FFF7FEFF 		bl	rt_memcpy
+ 840              	.LVL89:
+ 493:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 841              		.loc 1 493 0
+ 842 00da 2846     		mov	r0, r5
+ 843 00dc FFF7FEFF 		bl	rt_free
+ 844              	.LVL90:
+ 845 00e0 E4E7     		b	.L54
+ 846              	.LVL91:
+ 847              	.L63:
+ 423:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     }
+ 848              		.loc 1 423 0
+ 849 00e2 0027     		movs	r7, #0
+ 850 00e4 E2E7     		b	.L54
+ 851              	.L69:
+ 852 00e6 00BF     		.align	2
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 28
+
+
+ 853              	.L68:
+ 854 00e8 00000000 		.word	.LANCHOR3
+ 855 00ec 00000000 		.word	.LANCHOR4
+ 856 00f0 00000000 		.word	.LANCHOR0
+ 857 00f4 00000000 		.word	.LANCHOR1
+ 858 00f8 00000000 		.word	.LANCHOR5
+ 859              		.cfi_endproc
+ 860              	.LFE18:
+ 862              		.section	.text.rt_memory_info,"ax",%progbits
+ 863              		.align	1
+ 864              		.global	rt_memory_info
+ 865              		.syntax unified
+ 866              		.thumb
+ 867              		.thumb_func
+ 868              		.fpu fpv4-sp-d16
+ 870              	rt_memory_info:
+ 871              	.LFB21:
+ 597:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** RTM_EXPORT(rt_free);
+ 598:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** 
+ 599:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** #ifdef RT_MEM_STATS
+ 600:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** void rt_memory_info(rt_uint32_t *total,
+ 601:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     rt_uint32_t *used,
+ 602:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****                     rt_uint32_t *max_used)
+ 603:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** {
+ 872              		.loc 1 603 0
+ 873              		.cfi_startproc
+ 874              		@ args = 0, pretend = 0, frame = 0
+ 875              		@ frame_needed = 0, uses_anonymous_args = 0
+ 876              		@ link register save eliminated.
+ 877              	.LVL92:
+ 604:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (total != RT_NULL)
+ 878              		.loc 1 604 0
+ 879 0000 0346     		mov	r3, r0
+ 880 0002 10B1     		cbz	r0, .L71
+ 605:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         *total = mem_size_aligned;
+ 881              		.loc 1 605 0
+ 882 0004 0548     		ldr	r0, .L74
+ 883              	.LVL93:
+ 884 0006 0068     		ldr	r0, [r0]
+ 885 0008 1860     		str	r0, [r3]
+ 886              	.L71:
+ 606:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (used  != RT_NULL)
+ 887              		.loc 1 606 0
+ 888 000a 11B1     		cbz	r1, .L72
+ 607:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         *used = used_mem;
+ 889              		.loc 1 607 0
+ 890 000c 044B     		ldr	r3, .L74+4
+ 891              	.LVL94:
+ 892 000e 1B68     		ldr	r3, [r3]
+ 893 0010 0B60     		str	r3, [r1]
+ 894              	.L72:
+ 608:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****     if (max_used != RT_NULL)
+ 895              		.loc 1 608 0
+ 896 0012 12B1     		cbz	r2, .L70
+ 609:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c ****         *max_used = max_mem;
+ 897              		.loc 1 609 0
+ 898 0014 034B     		ldr	r3, .L74+8
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 29
+
+
+ 899 0016 1B68     		ldr	r3, [r3]
+ 900 0018 1360     		str	r3, [r2]
+ 901              	.L70:
+ 610:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/mem.c **** }
+ 902              		.loc 1 610 0
+ 903 001a 7047     		bx	lr
+ 904              	.L75:
+ 905              		.align	2
+ 906              	.L74:
+ 907 001c 00000000 		.word	.LANCHOR3
+ 908 0020 00000000 		.word	.LANCHOR5
+ 909 0024 00000000 		.word	.LANCHOR6
+ 910              		.cfi_endproc
+ 911              	.LFE21:
+ 913              		.section	.bss.heap_end,"aw",%nobits
+ 914              		.align	2
+ 915              		.set	.LANCHOR1,. + 0
+ 918              	heap_end:
+ 919 0000 00000000 		.space	4
+ 920              		.section	.bss.heap_ptr,"aw",%nobits
+ 921              		.align	2
+ 922              		.set	.LANCHOR0,. + 0
+ 925              	heap_ptr:
+ 926 0000 00000000 		.space	4
+ 927              		.section	.bss.heap_sem,"aw",%nobits
+ 928              		.align	2
+ 929              		.set	.LANCHOR4,. + 0
+ 932              	heap_sem:
+ 933 0000 00000000 		.space	32
+ 933      00000000 
+ 933      00000000 
+ 933      00000000 
+ 933      00000000 
+ 934              		.section	.bss.lfree,"aw",%nobits
+ 935              		.align	2
+ 936              		.set	.LANCHOR2,. + 0
+ 939              	lfree:
+ 940 0000 00000000 		.space	4
+ 941              		.section	.bss.max_mem,"aw",%nobits
+ 942              		.align	2
+ 943              		.set	.LANCHOR6,. + 0
+ 946              	max_mem:
+ 947 0000 00000000 		.space	4
+ 948              		.section	.bss.mem_size_aligned,"aw",%nobits
+ 949              		.align	2
+ 950              		.set	.LANCHOR3,. + 0
+ 953              	mem_size_aligned:
+ 954 0000 00000000 		.space	4
+ 955              		.section	.bss.used_mem,"aw",%nobits
+ 956              		.align	2
+ 957              		.set	.LANCHOR5,. + 0
+ 960              	used_mem:
+ 961 0000 00000000 		.space	4
+ 962              		.section	.rodata.rt_free.str1.4,"aMS",%progbits,1
+ 963              		.align	2
+ 964              	.LC2:
+ 965 0000 746F2066 		.ascii	"to free a bad data block:\012\000"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 30
+
+
+ 965      72656520 
+ 965      61206261 
+ 965      64206461 
+ 965      74612062 
+ 966 001b 00       		.space	1
+ 967              	.LC3:
+ 968 001c 6D656D3A 		.ascii	"mem: 0x%08x, used flag: %d, magic code: 0x%04x\012\000"
+ 968      20307825 
+ 968      3038782C 
+ 968      20757365 
+ 968      6420666C 
+ 969              		.section	.rodata.rt_system_heap_init.str1.4,"aMS",%progbits,1
+ 970              		.align	2
+ 971              	.LC0:
+ 972 0000 68656170 		.ascii	"heap\000"
+ 972      00
+ 973 0005 000000   		.space	3
+ 974              	.LC1:
+ 975 0008 6D656D20 		.ascii	"mem init, error begin address 0x%x, and end address"
+ 975      696E6974 
+ 975      2C206572 
+ 975      726F7220 
+ 975      62656769 
+ 976 003b 20307825 		.ascii	" 0x%x\012\000"
+ 976      780A00
+ 977              		.text
+ 978              	.Letext0:
+ 979              		.file 2 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtdef.h"
+ 980              		.file 3 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtthread.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s 			page 31
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 mem.c
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:18     .text.plug_holes:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:24     .text.plug_holes:0000000000000000 plug_holes
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:111    .text.plug_holes:000000000000005c $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:118    .text.rt_system_heap_init:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:125    .text.rt_system_heap_init:0000000000000000 rt_system_heap_init
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:219    .text.rt_system_heap_init:0000000000000064 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:230    .text.rt_malloc:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:237    .text.rt_malloc:0000000000000000 rt_malloc
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:471    .text.rt_malloc:0000000000000100 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:482    .text.rt_calloc:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:489    .text.rt_calloc:0000000000000000 rt_calloc
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:525    .text.rt_free:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:532    .text.rt_free:0000000000000000 rt_free
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:643    .text.rt_free:000000000000008c $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:654    .text.rt_realloc:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:661    .text.rt_realloc:0000000000000000 rt_realloc
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:854    .text.rt_realloc:00000000000000e8 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:863    .text.rt_memory_info:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:870    .text.rt_memory_info:0000000000000000 rt_memory_info
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:907    .text.rt_memory_info:000000000000001c $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:914    .bss.heap_end:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:918    .bss.heap_end:0000000000000000 heap_end
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:921    .bss.heap_ptr:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:925    .bss.heap_ptr:0000000000000000 heap_ptr
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:928    .bss.heap_sem:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:932    .bss.heap_sem:0000000000000000 heap_sem
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:935    .bss.lfree:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:939    .bss.lfree:0000000000000000 lfree
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:942    .bss.max_mem:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:946    .bss.max_mem:0000000000000000 max_mem
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:949    .bss.mem_size_aligned:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:953    .bss.mem_size_aligned:0000000000000000 mem_size_aligned
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:956    .bss.used_mem:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:960    .bss.used_mem:0000000000000000 used_mem
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:963    .rodata.rt_free.str1.4:0000000000000000 $d
+C:\Users\chuti\AppData\Local\Temp\cctCEFjU.s:970    .rodata.rt_system_heap_init.str1.4:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+rt_kprintf
+rt_sem_init
+rt_sem_take
+rt_sem_release
+rt_memset
+rt_memcpy

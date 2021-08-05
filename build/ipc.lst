@@ -1,0 +1,1494 @@
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ipc.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.rt_sem_init,"ax",%progbits
+  18              		.align	1
+  19              		.global	rt_sem_init
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	rt_sem_init:
+  26              	.LFB19:
+  27              		.file 1 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-03-14     Bernard      the first version
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-04-25     Bernard      implement semaphore
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-05-03     Bernard      add RT_IPC_DEBUG
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *                             modify the type of IPC waiting time to rt_int32_t
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-05-10     Bernard      fix the semaphore take bug and add IPC object
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-05-12     Bernard      implement mailbox and message queue
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-05-20     Bernard      implement mutex
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-05-23     Bernard      implement fast event
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-05-24     Bernard      implement event
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-06-03     Bernard      fix the thread timer init bug
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-06-05     Bernard      fix the mutex release bug
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-06-07     Bernard      fix the message queue send bug
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2006-08-04     Bernard      add hook support
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2009-05-21     Yi.qiu       fix the sem release bug
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2009-07-18     Bernard      fix the event clear bug
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2009-09-09     Bernard      remove fast event and fix ipc release bug
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2009-10-10     Bernard      change semaphore and mutex value to unsigned value
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2009-10-25     Bernard      change the mb/mq receive timeout to 0 if the
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *                             re-calculated delta tick is a negative number.
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2009-12-16     Bernard      fix the rt_ipc_object_suspend issue when IPC flag
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *                             is RT_IPC_FLAG_PRIO
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2010-01-20     mbbill       remove rt_ipc_object_decrease function.
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2010-04-20     Bernard      move memcpy outside interrupt disable in mq
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2010-10-26     yi.qiu       add module support in rt_mp_delete and rt_mq_delete
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 2
+
+
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2010-11-10     Bernard      add IPC reset command implementation.
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2011-12-18     Bernard      add more parameter checking in message queue
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * 2013-09-14     Grissiom     add an option check in rt_event_recv
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #include <rtthread.h>
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #include <rthw.h>
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #ifdef RT_USING_HOOK
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** extern void (*rt_object_trytake_hook)(struct rt_object *object);
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** extern void (*rt_object_take_hook)(struct rt_object *object);
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** extern void (*rt_object_put_hook)(struct rt_object *object);
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #endif
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @addtogroup IPC
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**@{*/
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will initialize an IPC object
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param ipc the IPC object
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the operation status, RT_EOK on successful
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_inline rt_err_t rt_ipc_object_init(struct rt_ipc_object *ipc)
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* init ipc object */
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_list_init(&(ipc->suspend_thread));
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will suspend a thread to a specified list. IPC object or some
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * double-queue object (mailbox etc.) contains this kind of list.
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param list the IPC suspended thread list
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param thread the thread object to be suspended
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param flag the IPC object flag,
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *        which shall be RT_IPC_FLAG_FIFO/RT_IPC_FLAG_PRIO.
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the operation status, RT_EOK on successful
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_inline rt_err_t rt_ipc_list_suspend(rt_list_t        *list,
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                        struct rt_thread *thread,
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                        rt_uint8_t        flag)
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* suspend thread */
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_thread_suspend(thread);
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     switch (flag)
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     case RT_IPC_FLAG_FIFO:
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_list_insert_before(list, &(thread->tlist));
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 3
+
+
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         break;
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     case RT_IPC_FLAG_PRIO:
+  92:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         {
+  93:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             struct rt_list_node *n;
+  94:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             struct rt_thread *sthread;
+  95:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  96:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* find a suitable position */
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             for (n = list->next; n != list; n = n->next)
+  98:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             {
+  99:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 sthread = rt_list_entry(n, struct rt_thread, tlist);
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 101:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 /* find out */
+ 102:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 if (thread->current_priority < sthread->current_priority)
+ 103:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 {
+ 104:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                     /* insert this thread before the sthread */
+ 105:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                     rt_list_insert_before(&(sthread->tlist), &(thread->tlist));
+ 106:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                     break;
+ 107:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 }
+ 108:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             }
+ 109:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 110:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /*
+ 111:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****              * not found a suitable position,
+ 112:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****              * append to the end of suspend_thread list
+ 113:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****              */
+ 114:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             if (n == list)
+ 115:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 rt_list_insert_before(list, &(thread->tlist));
+ 116:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         }
+ 117:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         break;
+ 118:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 119:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 120:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 121:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 122:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 123:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 124:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will resume the first thread in the list of a IPC object:
+ 125:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * - remove the thread from suspend queue of IPC object
+ 126:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * - put the thread into system ready queue
+ 127:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 128:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param list the thread list
+ 129:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 130:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the operation status, RT_EOK on successful
+ 131:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 132:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_inline rt_err_t rt_ipc_list_resume(rt_list_t *list)
+ 133:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 134:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     struct rt_thread *thread;
+ 135:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 136:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* get thread entry */
+ 137:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     thread = rt_list_entry(list->next, struct rt_thread, tlist);
+ 138:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 139:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_DEBUG_LOG(RT_DEBUG_IPC, ("resume thread:%s\n", thread->name));
+ 140:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 141:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* resume it */
+ 142:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_thread_resume(thread);
+ 143:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 144:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 145:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 4
+
+
+ 146:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 147:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 148:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will resume all suspended threads in a list, including
+ 149:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * suspend list of IPC object and private list of mailbox etc.
+ 150:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 151:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param list of the threads to resume
+ 152:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 153:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the operation status, RT_EOK on successful
+ 154:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 155:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_inline rt_err_t rt_ipc_list_resume_all(rt_list_t *list)
+ 156:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 157:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     struct rt_thread *thread;
+ 158:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     register rt_ubase_t temp;
+ 159:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 160:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* wakeup all suspend threads */
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     while (!rt_list_isempty(list))
+ 162:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 163:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* disable interrupt */
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         temp = rt_hw_interrupt_disable();
+ 165:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 166:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* get next suspend thread */
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         thread = rt_list_entry(list->next, struct rt_thread, tlist);
+ 168:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* set error code to RT_ERROR */
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         thread->error = -RT_ERROR;
+ 170:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 171:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /*
+ 172:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****          * resume thread
+ 173:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****          * In rt_thread_resume function, it will remove current thread from
+ 174:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****          * suspend list
+ 175:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****          */
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_thread_resume(thread);
+ 177:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 178:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* enable interrupt */
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_hw_interrupt_enable(temp);
+ 180:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 181:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 182:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 183:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 184:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 185:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #ifdef RT_USING_SEMAPHORE
+ 186:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 187:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will initialize a semaphore and put it under control of
+ 188:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * resource management.
+ 189:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 190:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 191:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param name the name of semaphore
+ 192:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param value the init value of semaphore
+ 193:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param flag the flag of semaphore
+ 194:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 195:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the operation status, RT_EOK on successful
+ 196:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 197:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_init(rt_sem_t    sem,
+ 198:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                      const char *name,
+ 199:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                      rt_uint32_t value,
+ 200:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                      rt_uint8_t  flag)
+ 201:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+  28              		.loc 1 201 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 5
+
+
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              	.LVL0:
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 14, -4
+  40 0002 0446     		mov	r4, r0
+  41 0004 1646     		mov	r6, r2
+  42 0006 1D46     		mov	r5, r3
+ 202:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(sem != RT_NULL);
+ 203:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(value < 0x10000U);
+ 204:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 205:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* init object */
+ 206:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_object_init(&(sem->parent.parent), RT_Object_Class_Semaphore, name);
+  43              		.loc 1 206 0
+  44 0008 0A46     		mov	r2, r1
+  45              	.LVL1:
+  46 000a 0221     		movs	r1, #2
+  47              	.LVL2:
+  48 000c FFF7FEFF 		bl	rt_object_init
+  49              	.LVL3:
+  50              	.LBB25:
+  51              	.LBB26:
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+  52              		.loc 1 62 0
+  53 0010 04F11403 		add	r3, r4, #20
+  54              	.LVL4:
+  55              	.LBB27:
+  56              	.LBB28:
+  57              		.file 2 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h"
+   1:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /*
+   2:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * Copyright (c) 2006-2018, RT-Thread Development Team
+   3:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+   4:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * SPDX-License-Identifier: Apache-2.0
+   5:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+   6:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * Change Logs:
+   7:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * Date           Author       Notes
+   8:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2006-03-16     Bernard      the first version
+   9:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2006-09-07     Bernard      move the kservice APIs to rtthread.h
+  10:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2007-06-27     Bernard      fix the rt_list_remove bug
+  11:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2012-03-22     Bernard      rename kservice.h to rtservice.h
+  12:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * 2017-11-15     JasonJia     Modify rt_slist_foreach to rt_slist_for_each_entry.
+  13:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *                             Make code cleanup.
+  14:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  15:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  16:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #ifndef __RT_SERVICE_H__
+  17:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #define __RT_SERVICE_H__
+  18:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  19:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #ifdef __cplusplus
+  20:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** extern "C" {
+  21:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #endif
+  22:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 6
+
+
+  23:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  24:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @addtogroup KernelService
+  25:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  26:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  27:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**@{*/
+  28:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  29:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  30:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * rt_container_of - return the member address of ptr, if the type of ptr is the
+  31:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * struct type.
+  32:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  33:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #define rt_container_of(ptr, type, member) \
+  34:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
+  35:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  36:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  37:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  38:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief initialize a list object
+  39:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  40:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** #define RT_LIST_OBJECT_INIT(object) { &(object), &(object) }
+  41:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  42:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  43:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief initialize a list
+  44:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+  45:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l list to be initialized
+  46:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  47:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_init(rt_list_t *l)
+  48:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->next = l->prev = l;
+  58              		.loc 2 49 0
+  59 0014 A361     		str	r3, [r4, #24]
+  60 0016 6361     		str	r3, [r4, #20]
+  61              	.LVL5:
+  62              	.LBE28:
+  63              	.LBE27:
+  64              	.LBE26:
+  65              	.LBE25:
+ 207:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 208:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* init ipc object */
+ 209:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_ipc_object_init(&(sem->parent));
+ 210:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 211:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* set init value */
+ 212:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     sem->value = (rt_uint16_t)value;
+  66              		.loc 1 212 0
+  67 0018 A683     		strh	r6, [r4, #28]	@ movhi
+ 213:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 214:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* set parent */
+ 215:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     sem->parent.parent.flag = flag;
+  68              		.loc 1 215 0
+  69 001a 6572     		strb	r5, [r4, #9]
+ 216:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 217:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 218:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+  70              		.loc 1 218 0
+  71 001c 0020     		movs	r0, #0
+  72 001e 70BD     		pop	{r4, r5, r6, pc}
+  73              		.cfi_endproc
+  74              	.LFE19:
+  76              		.section	.text.rt_sem_detach,"ax",%progbits
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 7
+
+
+  77              		.align	1
+  78              		.global	rt_sem_detach
+  79              		.syntax unified
+  80              		.thumb
+  81              		.thumb_func
+  82              		.fpu fpv4-sp-d16
+  84              	rt_sem_detach:
+  85              	.LFB20:
+ 219:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_init);
+ 220:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 221:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 222:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will detach a semaphore from resource management
+ 223:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 224:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 225:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 226:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the operation status, RT_EOK on successful
+ 227:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 228:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @see rt_sem_delete
+ 229:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 230:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_detach(rt_sem_t sem)
+ 231:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+  86              		.loc 1 231 0
+  87              		.cfi_startproc
+  88              		@ args = 0, pretend = 0, frame = 0
+  89              		@ frame_needed = 0, uses_anonymous_args = 0
+  90              	.LVL6:
+  91 0000 70B5     		push	{r4, r5, r6, lr}
+  92              	.LCFI1:
+  93              		.cfi_def_cfa_offset 16
+  94              		.cfi_offset 4, -16
+  95              		.cfi_offset 5, -12
+  96              		.cfi_offset 6, -8
+  97              		.cfi_offset 14, -4
+  98 0002 0646     		mov	r6, r0
+ 232:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* parameter check */
+ 233:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(sem != RT_NULL);
+ 234:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_get_type(&sem->parent.parent) == RT_Object_Class_Semaphore);
+ 235:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_is_systemobject(&sem->parent.parent));
+ 236:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 237:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* wakeup all suspend threads */
+ 238:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_ipc_list_resume_all(&(sem->parent.suspend_thread));
+  99              		.loc 1 238 0
+ 100 0004 00F11404 		add	r4, r0, #20
+ 101              	.LVL7:
+ 102 0008 0CE0     		b	.L4
+ 103              	.LVL8:
+ 104              	.L5:
+ 105              	.LBB33:
+ 106              	.LBB34:
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 107              		.loc 1 164 0
+ 108 000a FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 109              	.LVL9:
+ 110 000e 0546     		mov	r5, r0
+ 111              	.LVL10:
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* set error code to RT_ERROR */
+ 112              		.loc 1 167 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 8
+
+
+ 113 0010 2068     		ldr	r0, [r4]
+ 114              	.LVL11:
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 115              		.loc 1 169 0
+ 116 0012 4FF0FF33 		mov	r3, #-1
+ 117 0016 C361     		str	r3, [r0, #28]
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 118              		.loc 1 176 0
+ 119 0018 1438     		subs	r0, r0, #20
+ 120              	.LVL12:
+ 121 001a FFF7FEFF 		bl	rt_thread_resume
+ 122              	.LVL13:
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 123              		.loc 1 179 0
+ 124 001e 2846     		mov	r0, r5
+ 125 0020 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 126              	.LVL14:
+ 127              	.L4:
+ 128              	.LBB35:
+ 129              	.LBB36:
+  50:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+  51:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  52:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  53:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief insert a node after a list
+  54:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+  55:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l list to insert it
+  56:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param n new node to be inserted
+  57:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  58:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_insert_after(rt_list_t *l, rt_list_t *n)
+  59:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  60:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->next->prev = n;
+  61:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l->next;
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  63:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->next = n;
+  64:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l;
+  65:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+  66:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  67:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  68:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief insert a node before a list
+  69:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  *
+  70:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param n new node to be inserted
+  71:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l list to insert it
+  72:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  73:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_insert_before(rt_list_t *l, rt_list_t *n)
+  74:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->prev->next = n;
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l->prev;
+  77:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     l->prev = n;
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l;
+  80:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+  81:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  82:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief remove node from list.
+  84:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param n the node to remove from the list.
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  86:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline void rt_list_remove(rt_list_t *n)
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 9
+
+
+  87:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next->prev = n->prev;
+  89:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev->next = n->next;
+  90:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  91:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = n->prev = n;
+  92:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+  93:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+  94:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** /**
+  95:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @brief tests whether a list is empty
+  96:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  * @param l the list to test.
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****  */
+  98:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** rt_inline int rt_list_isempty(const rt_list_t *l)
+  99:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** {
+ 100:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     return l->next == l;
+ 130              		.loc 2 100 0
+ 131 0024 2368     		ldr	r3, [r4]
+ 132              	.LVL15:
+ 133              	.LBE36:
+ 134              	.LBE35:
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 135              		.loc 1 161 0
+ 136 0026 9C42     		cmp	r4, r3
+ 137 0028 EFD1     		bne	.L5
+ 138              	.LVL16:
+ 139              	.LBE34:
+ 140              	.LBE33:
+ 239:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 240:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* detach semaphore object */
+ 241:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_object_detach(&(sem->parent.parent));
+ 141              		.loc 1 241 0
+ 142 002a 3046     		mov	r0, r6
+ 143 002c FFF7FEFF 		bl	rt_object_detach
+ 144              	.LVL17:
+ 242:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 243:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 244:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 145              		.loc 1 244 0
+ 146 0030 0020     		movs	r0, #0
+ 147 0032 70BD     		pop	{r4, r5, r6, pc}
+ 148              		.cfi_endproc
+ 149              	.LFE20:
+ 151              		.section	.text.rt_sem_create,"ax",%progbits
+ 152              		.align	1
+ 153              		.global	rt_sem_create
+ 154              		.syntax unified
+ 155              		.thumb
+ 156              		.thumb_func
+ 157              		.fpu fpv4-sp-d16
+ 159              	rt_sem_create:
+ 160              	.LFB21:
+ 245:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_detach);
+ 246:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 247:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #ifdef RT_USING_HEAP
+ 248:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 249:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will create a semaphore from system resource
+ 250:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 251:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param name the name of semaphore
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 10
+
+
+ 252:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param value the init value of semaphore
+ 253:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param flag the flag of semaphore
+ 254:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 255:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the created semaphore, RT_NULL on error happen
+ 256:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 257:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @see rt_sem_init
+ 258:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 259:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_sem_t rt_sem_create(const char *name, rt_uint32_t value, rt_uint8_t flag)
+ 260:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 161              		.loc 1 260 0
+ 162              		.cfi_startproc
+ 163              		@ args = 0, pretend = 0, frame = 0
+ 164              		@ frame_needed = 0, uses_anonymous_args = 0
+ 165              	.LVL18:
+ 166 0000 38B5     		push	{r3, r4, r5, lr}
+ 167              	.LCFI2:
+ 168              		.cfi_def_cfa_offset 16
+ 169              		.cfi_offset 3, -16
+ 170              		.cfi_offset 4, -12
+ 171              		.cfi_offset 5, -8
+ 172              		.cfi_offset 14, -4
+ 173 0002 0D46     		mov	r5, r1
+ 174 0004 1446     		mov	r4, r2
+ 261:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_sem_t sem;
+ 262:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 263:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_DEBUG_NOT_IN_INTERRUPT;
+ 264:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(value < 0x10000U);
+ 265:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 266:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* allocate object */
+ 267:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     sem = (rt_sem_t)rt_object_allocate(RT_Object_Class_Semaphore, name);
+ 175              		.loc 1 267 0
+ 176 0006 0146     		mov	r1, r0
+ 177              	.LVL19:
+ 178 0008 0220     		movs	r0, #2
+ 179              	.LVL20:
+ 180 000a FFF7FEFF 		bl	rt_object_allocate
+ 181              	.LVL21:
+ 268:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     if (sem == RT_NULL)
+ 182              		.loc 1 268 0
+ 183 000e 0346     		mov	r3, r0
+ 184 0010 28B1     		cbz	r0, .L7
+ 185              	.LVL22:
+ 186              	.LBB37:
+ 187              	.LBB38:
+  62:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 188              		.loc 1 62 0
+ 189 0012 00F11402 		add	r2, r0, #20
+ 190              	.LVL23:
+ 191              	.LBB39:
+ 192              	.LBB40:
+  49:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 193              		.loc 2 49 0
+ 194 0016 8261     		str	r2, [r0, #24]
+ 195 0018 4261     		str	r2, [r0, #20]
+ 196              	.LVL24:
+ 197              	.LBE40:
+ 198              	.LBE39:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 11
+
+
+ 199              	.LBE38:
+ 200              	.LBE37:
+ 269:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         return sem;
+ 270:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 271:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* init ipc object */
+ 272:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_ipc_object_init(&(sem->parent));
+ 273:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 274:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* set init value */
+ 275:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     sem->value = value;
+ 201              		.loc 1 275 0
+ 202 001a 8583     		strh	r5, [r0, #28]	@ movhi
+ 276:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 277:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* set parent */
+ 278:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     sem->parent.parent.flag = flag;
+ 203              		.loc 1 278 0
+ 204 001c 4472     		strb	r4, [r0, #9]
+ 205              	.L7:
+ 279:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 280:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return sem;
+ 281:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 206              		.loc 1 281 0
+ 207 001e 1846     		mov	r0, r3
+ 208              	.LVL25:
+ 209 0020 38BD     		pop	{r3, r4, r5, pc}
+ 210              		.cfi_endproc
+ 211              	.LFE21:
+ 213              		.section	.text.rt_sem_delete,"ax",%progbits
+ 214              		.align	1
+ 215              		.global	rt_sem_delete
+ 216              		.syntax unified
+ 217              		.thumb
+ 218              		.thumb_func
+ 219              		.fpu fpv4-sp-d16
+ 221              	rt_sem_delete:
+ 222              	.LFB22:
+ 282:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_create);
+ 283:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 284:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 285:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will delete a semaphore object and release the memory
+ 286:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 287:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 288:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 289:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the error code
+ 290:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 291:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @see rt_sem_detach
+ 292:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 293:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_delete(rt_sem_t sem)
+ 294:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 223              		.loc 1 294 0
+ 224              		.cfi_startproc
+ 225              		@ args = 0, pretend = 0, frame = 0
+ 226              		@ frame_needed = 0, uses_anonymous_args = 0
+ 227              	.LVL26:
+ 228 0000 70B5     		push	{r4, r5, r6, lr}
+ 229              	.LCFI3:
+ 230              		.cfi_def_cfa_offset 16
+ 231              		.cfi_offset 4, -16
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 12
+
+
+ 232              		.cfi_offset 5, -12
+ 233              		.cfi_offset 6, -8
+ 234              		.cfi_offset 14, -4
+ 235 0002 0646     		mov	r6, r0
+ 295:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_DEBUG_NOT_IN_INTERRUPT;
+ 296:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 297:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* parameter check */
+ 298:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(sem != RT_NULL);
+ 299:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_get_type(&sem->parent.parent) == RT_Object_Class_Semaphore);
+ 300:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_is_systemobject(&sem->parent.parent) == RT_FALSE);
+ 301:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 302:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* wakeup all suspend threads */
+ 303:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_ipc_list_resume_all(&(sem->parent.suspend_thread));
+ 236              		.loc 1 303 0
+ 237 0004 00F11404 		add	r4, r0, #20
+ 238              	.LVL27:
+ 239 0008 0CE0     		b	.L11
+ 240              	.LVL28:
+ 241              	.L12:
+ 242              	.LBB45:
+ 243              	.LBB46:
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 244              		.loc 1 164 0
+ 245 000a FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 246              	.LVL29:
+ 247 000e 0546     		mov	r5, r0
+ 248              	.LVL30:
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* set error code to RT_ERROR */
+ 249              		.loc 1 167 0
+ 250 0010 2068     		ldr	r0, [r4]
+ 251              	.LVL31:
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 252              		.loc 1 169 0
+ 253 0012 4FF0FF33 		mov	r3, #-1
+ 254 0016 C361     		str	r3, [r0, #28]
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 255              		.loc 1 176 0
+ 256 0018 1438     		subs	r0, r0, #20
+ 257              	.LVL32:
+ 258 001a FFF7FEFF 		bl	rt_thread_resume
+ 259              	.LVL33:
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 260              		.loc 1 179 0
+ 261 001e 2846     		mov	r0, r5
+ 262 0020 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 263              	.LVL34:
+ 264              	.L11:
+ 265              	.LBB47:
+ 266              	.LBB48:
+ 267              		.loc 2 100 0
+ 268 0024 2368     		ldr	r3, [r4]
+ 269              	.LVL35:
+ 270              	.LBE48:
+ 271              	.LBE47:
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 272              		.loc 1 161 0
+ 273 0026 9C42     		cmp	r4, r3
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 13
+
+
+ 274 0028 EFD1     		bne	.L12
+ 275              	.LVL36:
+ 276              	.LBE46:
+ 277              	.LBE45:
+ 304:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 305:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* delete semaphore object */
+ 306:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_object_delete(&(sem->parent.parent));
+ 278              		.loc 1 306 0
+ 279 002a 3046     		mov	r0, r6
+ 280 002c FFF7FEFF 		bl	rt_object_delete
+ 281              	.LVL37:
+ 307:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 308:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 309:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 282              		.loc 1 309 0
+ 283 0030 0020     		movs	r0, #0
+ 284 0032 70BD     		pop	{r4, r5, r6, pc}
+ 285              		.cfi_endproc
+ 286              	.LFE22:
+ 288              		.section	.text.rt_sem_take,"ax",%progbits
+ 289              		.align	1
+ 290              		.global	rt_sem_take
+ 291              		.syntax unified
+ 292              		.thumb
+ 293              		.thumb_func
+ 294              		.fpu fpv4-sp-d16
+ 296              	rt_sem_take:
+ 297              	.LFB23:
+ 310:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_delete);
+ 311:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** #endif
+ 312:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 313:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 314:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will take a semaphore, if the semaphore is unavailable, the
+ 315:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * thread shall wait for a specified time.
+ 316:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 317:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 318:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param time the waiting time
+ 319:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 320:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the error code
+ 321:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 322:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_take(rt_sem_t sem, rt_int32_t time)
+ 323:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 298              		.loc 1 323 0
+ 299              		.cfi_startproc
+ 300              		@ args = 0, pretend = 0, frame = 8
+ 301              		@ frame_needed = 0, uses_anonymous_args = 0
+ 302              	.LVL38:
+ 303 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 304              	.LCFI4:
+ 305              		.cfi_def_cfa_offset 24
+ 306              		.cfi_offset 4, -24
+ 307              		.cfi_offset 5, -20
+ 308              		.cfi_offset 6, -16
+ 309              		.cfi_offset 7, -12
+ 310              		.cfi_offset 8, -8
+ 311              		.cfi_offset 14, -4
+ 312 0004 82B0     		sub	sp, sp, #8
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 14
+
+
+ 313              	.LCFI5:
+ 314              		.cfi_def_cfa_offset 32
+ 315 0006 0546     		mov	r5, r0
+ 316 0008 0191     		str	r1, [sp, #4]
+ 324:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     register rt_base_t temp;
+ 325:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     struct rt_thread *thread;
+ 326:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 327:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* parameter check */
+ 328:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(sem != RT_NULL);
+ 329:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_get_type(&sem->parent.parent) == RT_Object_Class_Semaphore);
+ 330:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 331:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(sem->parent.parent)));
+ 332:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 333:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* disable interrupt */
+ 334:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     temp = rt_hw_interrupt_disable();
+ 317              		.loc 1 334 0
+ 318 000a FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 319              	.LVL39:
+ 320 000e 0746     		mov	r7, r0
+ 321              	.LVL40:
+ 335:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 336:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_DEBUG_LOG(RT_DEBUG_IPC, ("thread %s take sem:%s, which value is: %d\n",
+ 337:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 rt_thread_self()->name,
+ 338:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 ((struct rt_object *)sem)->name,
+ 339:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 sem->value));
+ 340:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 341:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     if (sem->value > 0)
+ 322              		.loc 1 341 0
+ 323 0010 AB8B     		ldrh	r3, [r5, #28]
+ 324 0012 F3B9     		cbnz	r3, .L27
+ 342:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 343:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* semaphore is available */
+ 344:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         sem->value --;
+ 345:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 346:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* enable interrupt */
+ 347:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_hw_interrupt_enable(temp);
+ 348:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 349:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     else
+ 350:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 351:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* no waiting, return with timeout */
+ 352:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         if (time == 0)
+ 325              		.loc 1 352 0
+ 326 0014 019B     		ldr	r3, [sp, #4]
+ 327 0016 13B3     		cbz	r3, .L28
+ 353:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         {
+ 354:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             rt_hw_interrupt_enable(temp);
+ 355:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 356:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             return -RT_ETIMEOUT;
+ 357:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         }
+ 358:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         else
+ 359:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         {
+ 360:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* current context checking */
+ 361:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             RT_DEBUG_IN_THREAD_CONTEXT;
+ 362:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 363:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* semaphore is unavailable, push to suspend list */
+ 364:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* get current thread */
+ 365:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             thread = rt_thread_self();
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 15
+
+
+ 328              		.loc 1 365 0
+ 329 0018 FFF7FEFF 		bl	rt_thread_self
+ 330              	.LVL41:
+ 331 001c 0446     		mov	r4, r0
+ 332              	.LVL42:
+ 366:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 367:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* reset thread error number */
+ 368:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             thread->error = RT_EOK;
+ 333              		.loc 1 368 0
+ 334 001e 0023     		movs	r3, #0
+ 335 0020 0363     		str	r3, [r0, #48]
+ 369:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 370:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             RT_DEBUG_LOG(RT_DEBUG_IPC, ("sem take: suspend thread - %s\n",
+ 371:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                         thread->name));
+ 372:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 373:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* suspend thread */
+ 374:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             rt_ipc_list_suspend(&(sem->parent.suspend_thread),
+ 336              		.loc 1 374 0
+ 337 0022 05F11406 		add	r6, r5, #20
+ 338 0026 95F80980 		ldrb	r8, [r5, #9]	@ zero_extendqisi2
+ 339              	.LVL43:
+ 340              	.LBB58:
+ 341              	.LBB59:
+  83:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 342              		.loc 1 83 0
+ 343 002a FFF7FEFF 		bl	rt_thread_suspend
+ 344              	.LVL44:
+  85:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 345              		.loc 1 85 0
+ 346 002e B8F1000F 		cmp	r8, #0
+ 347 0032 19D0     		beq	.L19
+ 348 0034 B8F1010F 		cmp	r8, #1
+ 349 0038 1FD0     		beq	.L20
+ 350              	.L18:
+ 351              	.LVL45:
+ 352              	.LBE59:
+ 353              	.LBE58:
+ 375:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 thread,
+ 376:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 sem->parent.parent.flag);
+ 377:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 378:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* has waiting time, start thread timer */
+ 379:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             if (time > 0)
+ 354              		.loc 1 379 0
+ 355 003a 019B     		ldr	r3, [sp, #4]
+ 356 003c 002B     		cmp	r3, #0
+ 357 003e 3ADC     		bgt	.L29
+ 358              	.LVL46:
+ 359              	.L25:
+ 380:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             {
+ 381:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 RT_DEBUG_LOG(RT_DEBUG_IPC, ("set thread:%s to timer list\n",
+ 382:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                             thread->name));
+ 383:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 384:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 /* reset the timeout of thread timer and start it */
+ 385:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 rt_timer_control(&(thread->thread_timer),
+ 386:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                  RT_TIMER_CTRL_SET_TIME,
+ 387:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                  &time);
+ 388:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 rt_timer_start(&(thread->thread_timer));
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 16
+
+
+ 389:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             }
+ 390:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 391:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* enable interrupt */
+ 392:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             rt_hw_interrupt_enable(temp);
+ 360              		.loc 1 392 0
+ 361 0040 3846     		mov	r0, r7
+ 362 0042 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 363              	.LVL47:
+ 393:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 394:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             /* do schedule */
+ 395:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             rt_schedule();
+ 364              		.loc 1 395 0
+ 365 0046 FFF7FEFF 		bl	rt_schedule
+ 366              	.LVL48:
+ 396:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 397:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             if (thread->error != RT_EOK)
+ 367              		.loc 1 397 0
+ 368 004a 206B     		ldr	r0, [r4, #48]
+ 369              	.LVL49:
+ 370              	.L14:
+ 398:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             {
+ 399:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 return thread->error;
+ 400:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             }
+ 401:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         }
+ 402:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 403:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 404:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(sem->parent.parent)));
+ 405:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 406:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 407:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 371              		.loc 1 407 0
+ 372 004c 02B0     		add	sp, sp, #8
+ 373              	.LCFI6:
+ 374              		.cfi_remember_state
+ 375              		.cfi_def_cfa_offset 24
+ 376              		@ sp needed
+ 377 004e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 378              	.LVL50:
+ 379              	.L27:
+ 380              	.LCFI7:
+ 381              		.cfi_restore_state
+ 344:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 382              		.loc 1 344 0
+ 383 0052 013B     		subs	r3, r3, #1
+ 384 0054 AB83     		strh	r3, [r5, #28]	@ movhi
+ 347:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 385              		.loc 1 347 0
+ 386 0056 FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 387              	.LVL51:
+ 406:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 388              		.loc 1 406 0
+ 389 005a 0020     		movs	r0, #0
+ 390 005c F6E7     		b	.L14
+ 391              	.LVL52:
+ 392              	.L28:
+ 354:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 393              		.loc 1 354 0
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 17
+
+
+ 394 005e FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 395              	.LVL53:
+ 356:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         }
+ 396              		.loc 1 356 0
+ 397 0062 6FF00100 		mvn	r0, #1
+ 398 0066 F1E7     		b	.L14
+ 399              	.LVL54:
+ 400              	.L19:
+ 401              	.LBB68:
+ 402              	.LBB67:
+  88:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         break;
+ 403              		.loc 1 88 0
+ 404 0068 04F11403 		add	r3, r4, #20
+ 405              	.LVL55:
+ 406              	.LBB60:
+ 407              	.LBB61:
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l->prev;
+ 408              		.loc 2 75 0
+ 409 006c 7268     		ldr	r2, [r6, #4]
+ 410 006e 1360     		str	r3, [r2]
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 411              		.loc 2 76 0
+ 412 0070 7268     		ldr	r2, [r6, #4]
+ 413 0072 A261     		str	r2, [r4, #24]
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l;
+ 414              		.loc 2 78 0
+ 415 0074 7360     		str	r3, [r6, #4]
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 416              		.loc 2 79 0
+ 417 0076 6661     		str	r6, [r4, #20]
+ 418 0078 DFE7     		b	.L18
+ 419              	.LVL56:
+ 420              	.L20:
+ 421              	.LBE61:
+ 422              	.LBE60:
+ 423              	.LBB62:
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             {
+ 424              		.loc 1 97 0
+ 425 007a 6B69     		ldr	r3, [r5, #20]
+ 426              	.LVL57:
+ 427              	.L21:
+ 428 007c 9E42     		cmp	r6, r3
+ 429 007e 0FD0     		beq	.L23
+ 430              	.LVL58:
+ 102:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 {
+ 431              		.loc 1 102 0
+ 432 0080 94F83510 		ldrb	r1, [r4, #53]	@ zero_extendqisi2
+ 433 0084 93F82120 		ldrb	r2, [r3, #33]	@ zero_extendqisi2
+ 434 0088 9142     		cmp	r1, r2
+ 435 008a 01D3     		bcc	.L30
+  97:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             {
+ 436              		.loc 1 97 0
+ 437 008c 1B68     		ldr	r3, [r3]
+ 438              	.LVL59:
+ 439 008e F5E7     		b	.L21
+ 440              	.LVL60:
+ 441              	.L30:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 18
+
+
+ 105:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                     break;
+ 442              		.loc 1 105 0
+ 443 0090 04F11402 		add	r2, r4, #20
+ 444              	.LVL61:
+ 445              	.LBB63:
+ 446              	.LBB64:
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l->prev;
+ 447              		.loc 2 75 0
+ 448 0094 5968     		ldr	r1, [r3, #4]
+ 449 0096 0A60     		str	r2, [r1]
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 450              		.loc 2 76 0
+ 451 0098 5968     		ldr	r1, [r3, #4]
+ 452 009a A161     		str	r1, [r4, #24]
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l;
+ 453              		.loc 2 78 0
+ 454 009c 5A60     		str	r2, [r3, #4]
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 455              		.loc 2 79 0
+ 456 009e 6361     		str	r3, [r4, #20]
+ 457              	.LVL62:
+ 458              	.L23:
+ 459              	.LBE64:
+ 460              	.LBE63:
+ 114:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                 rt_list_insert_before(list, &(thread->tlist));
+ 461              		.loc 1 114 0
+ 462 00a0 9E42     		cmp	r6, r3
+ 463 00a2 CAD1     		bne	.L18
+ 115:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         }
+ 464              		.loc 1 115 0
+ 465 00a4 04F11403 		add	r3, r4, #20
+ 466              	.LVL63:
+ 467              	.LBB65:
+ 468              	.LBB66:
+  75:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->prev = l->prev;
+ 469              		.loc 2 75 0
+ 470 00a8 7268     		ldr	r2, [r6, #4]
+ 471 00aa 1360     		str	r3, [r2]
+  76:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** 
+ 472              		.loc 2 76 0
+ 473 00ac 7268     		ldr	r2, [r6, #4]
+ 474 00ae A261     		str	r2, [r4, #24]
+  78:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h ****     n->next = l;
+ 475              		.loc 2 78 0
+ 476 00b0 7360     		str	r3, [r6, #4]
+  79:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtservice.h **** }
+ 477              		.loc 2 79 0
+ 478 00b2 6661     		str	r6, [r4, #20]
+ 479 00b4 C1E7     		b	.L18
+ 480              	.LVL64:
+ 481              	.L29:
+ 482              	.LBE66:
+ 483              	.LBE65:
+ 484              	.LBE62:
+ 485              	.LBE67:
+ 486              	.LBE68:
+ 385:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                  RT_TIMER_CTRL_SET_TIME,
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 19
+
+
+ 487              		.loc 1 385 0
+ 488 00b6 04F14405 		add	r5, r4, #68
+ 489              	.LVL65:
+ 490 00ba 01AA     		add	r2, sp, #4
+ 491 00bc 0021     		movs	r1, #0
+ 492 00be 2846     		mov	r0, r5
+ 493 00c0 FFF7FEFF 		bl	rt_timer_control
+ 494              	.LVL66:
+ 388:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****             }
+ 495              		.loc 1 388 0
+ 496 00c4 2846     		mov	r0, r5
+ 497 00c6 FFF7FEFF 		bl	rt_timer_start
+ 498              	.LVL67:
+ 499 00ca B9E7     		b	.L25
+ 500              		.cfi_endproc
+ 501              	.LFE23:
+ 503              		.section	.text.rt_sem_trytake,"ax",%progbits
+ 504              		.align	1
+ 505              		.global	rt_sem_trytake
+ 506              		.syntax unified
+ 507              		.thumb
+ 508              		.thumb_func
+ 509              		.fpu fpv4-sp-d16
+ 511              	rt_sem_trytake:
+ 512              	.LFB24:
+ 408:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_take);
+ 409:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 410:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 411:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will try to take a semaphore and immediately return
+ 412:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 413:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 414:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 415:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the error code
+ 416:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 417:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_trytake(rt_sem_t sem)
+ 418:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 513              		.loc 1 418 0
+ 514              		.cfi_startproc
+ 515              		@ args = 0, pretend = 0, frame = 0
+ 516              		@ frame_needed = 0, uses_anonymous_args = 0
+ 517              	.LVL68:
+ 518 0000 08B5     		push	{r3, lr}
+ 519              	.LCFI8:
+ 520              		.cfi_def_cfa_offset 8
+ 521              		.cfi_offset 3, -8
+ 522              		.cfi_offset 14, -4
+ 419:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return rt_sem_take(sem, 0);
+ 523              		.loc 1 419 0
+ 524 0002 0021     		movs	r1, #0
+ 525 0004 FFF7FEFF 		bl	rt_sem_take
+ 526              	.LVL69:
+ 420:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 527              		.loc 1 420 0
+ 528 0008 08BD     		pop	{r3, pc}
+ 529              		.cfi_endproc
+ 530              	.LFE24:
+ 532              		.section	.text.rt_sem_release,"ax",%progbits
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 20
+
+
+ 533              		.align	1
+ 534              		.global	rt_sem_release
+ 535              		.syntax unified
+ 536              		.thumb
+ 537              		.thumb_func
+ 538              		.fpu fpv4-sp-d16
+ 540              	rt_sem_release:
+ 541              	.LFB25:
+ 421:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_trytake);
+ 422:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 423:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 424:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function will release a semaphore, if there are threads suspended on
+ 425:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * semaphore, it will be waked up.
+ 426:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 427:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 428:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 429:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the error code
+ 430:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 431:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_release(rt_sem_t sem)
+ 432:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 542              		.loc 1 432 0
+ 543              		.cfi_startproc
+ 544              		@ args = 0, pretend = 0, frame = 0
+ 545              		@ frame_needed = 0, uses_anonymous_args = 0
+ 546              	.LVL70:
+ 547 0000 38B5     		push	{r3, r4, r5, lr}
+ 548              	.LCFI9:
+ 549              		.cfi_def_cfa_offset 16
+ 550              		.cfi_offset 3, -16
+ 551              		.cfi_offset 4, -12
+ 552              		.cfi_offset 5, -8
+ 553              		.cfi_offset 14, -4
+ 554 0002 0446     		mov	r4, r0
+ 555              	.LVL71:
+ 433:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     register rt_base_t temp;
+ 434:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     register rt_bool_t need_schedule;
+ 435:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 436:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* parameter check */
+ 437:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(sem != RT_NULL);
+ 438:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_get_type(&sem->parent.parent) == RT_Object_Class_Semaphore);
+ 439:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 440:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(sem->parent.parent)));
+ 441:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 442:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     need_schedule = RT_FALSE;
+ 443:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 444:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* disable interrupt */
+ 445:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     temp = rt_hw_interrupt_disable();
+ 556              		.loc 1 445 0
+ 557 0004 FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 558              	.LVL72:
+ 559 0008 0546     		mov	r5, r0
+ 560              	.LVL73:
+ 446:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 447:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_DEBUG_LOG(RT_DEBUG_IPC, ("thread %s releases sem:%s, which value is: %d\n",
+ 448:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 rt_thread_self()->name,
+ 449:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 ((struct rt_object *)sem)->name,
+ 450:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****                                 sem->value));
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 21
+
+
+ 451:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 452:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     if (!rt_list_isempty(&sem->parent.suspend_thread))
+ 561              		.loc 1 452 0
+ 562 000a 04F11403 		add	r3, r4, #20
+ 563              	.LVL74:
+ 564              	.LBB69:
+ 565              	.LBB70:
+ 566              		.loc 2 100 0
+ 567 000e 6069     		ldr	r0, [r4, #20]
+ 568              	.LVL75:
+ 569              	.LBE70:
+ 570              	.LBE69:
+ 571              		.loc 1 452 0
+ 572 0010 8342     		cmp	r3, r0
+ 573 0012 09D0     		beq	.L34
+ 574              	.LVL76:
+ 575              	.LBB71:
+ 576              	.LBB72:
+ 142:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 577              		.loc 1 142 0
+ 578 0014 1438     		subs	r0, r0, #20
+ 579              	.LVL77:
+ 580 0016 FFF7FEFF 		bl	rt_thread_resume
+ 581              	.LVL78:
+ 582              	.LBE72:
+ 583              	.LBE71:
+ 453:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 454:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* resume the suspended thread */
+ 455:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_ipc_list_resume(&(sem->parent.suspend_thread));
+ 456:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         need_schedule = RT_TRUE;
+ 584              		.loc 1 456 0
+ 585 001a 0124     		movs	r4, #1
+ 586              	.LVL79:
+ 587              	.L35:
+ 457:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 458:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     else
+ 459:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         sem->value ++; /* increase value */
+ 460:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 461:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* enable interrupt */
+ 462:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_hw_interrupt_enable(temp);
+ 588              		.loc 1 462 0
+ 589 001c 2846     		mov	r0, r5
+ 590 001e FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 591              	.LVL80:
+ 463:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 464:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* resume a thread, re-schedule */
+ 465:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     if (need_schedule == RT_TRUE)
+ 592              		.loc 1 465 0
+ 593 0022 34B9     		cbnz	r4, .L38
+ 594              	.L36:
+ 466:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_schedule();
+ 467:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 468:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return RT_EOK;
+ 469:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 595              		.loc 1 469 0
+ 596 0024 0020     		movs	r0, #0
+ 597 0026 38BD     		pop	{r3, r4, r5, pc}
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 22
+
+
+ 598              	.LVL81:
+ 599              	.L34:
+ 459:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 600              		.loc 1 459 0
+ 601 0028 A38B     		ldrh	r3, [r4, #28]
+ 602 002a 0133     		adds	r3, r3, #1
+ 603 002c A383     		strh	r3, [r4, #28]	@ movhi
+ 442:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 604              		.loc 1 442 0
+ 605 002e 0024     		movs	r4, #0
+ 606              	.LVL82:
+ 607 0030 F4E7     		b	.L35
+ 608              	.LVL83:
+ 609              	.L38:
+ 466:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_schedule();
+ 610              		.loc 1 466 0
+ 611 0032 FFF7FEFF 		bl	rt_schedule
+ 612              	.LVL84:
+ 613 0036 F5E7     		b	.L36
+ 614              		.cfi_endproc
+ 615              	.LFE25:
+ 617              		.section	.text.rt_sem_control,"ax",%progbits
+ 618              		.align	1
+ 619              		.global	rt_sem_control
+ 620              		.syntax unified
+ 621              		.thumb
+ 622              		.thumb_func
+ 623              		.fpu fpv4-sp-d16
+ 625              	rt_sem_control:
+ 626              	.LFB26:
+ 470:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** RTM_EXPORT(rt_sem_release);
+ 471:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 472:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** /**
+ 473:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * This function can get or set some extra attributions of a semaphore object.
+ 474:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 475:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param sem the semaphore object
+ 476:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param cmd the execution command
+ 477:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @param arg the execution argument
+ 478:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  *
+ 479:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  * @return the error code
+ 480:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****  */
+ 481:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** rt_err_t rt_sem_control(rt_sem_t sem, int cmd, void *arg)
+ 482:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** {
+ 627              		.loc 1 482 0
+ 628              		.cfi_startproc
+ 629              		@ args = 0, pretend = 0, frame = 0
+ 630              		@ frame_needed = 0, uses_anonymous_args = 0
+ 631              	.LVL85:
+ 483:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_ubase_t level;
+ 484:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 485:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     /* parameter check */
+ 486:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(sem != RT_NULL);
+ 487:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     RT_ASSERT(rt_object_get_type(&sem->parent.parent) == RT_Object_Class_Semaphore);
+ 488:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 489:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     if (cmd == RT_IPC_CMD_RESET)
+ 632              		.loc 1 489 0
+ 633 0000 0129     		cmp	r1, #1
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 23
+
+
+ 634 0002 22D1     		bne	.L43
+ 482:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     rt_ubase_t level;
+ 635              		.loc 1 482 0
+ 636 0004 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 637              	.LCFI10:
+ 638              		.cfi_def_cfa_offset 24
+ 639              		.cfi_offset 4, -24
+ 640              		.cfi_offset 5, -20
+ 641              		.cfi_offset 6, -16
+ 642              		.cfi_offset 7, -12
+ 643              		.cfi_offset 8, -8
+ 644              		.cfi_offset 14, -4
+ 645 0008 1746     		mov	r7, r2
+ 646 000a 0646     		mov	r6, r0
+ 647              	.LVL86:
+ 648              	.LBB78:
+ 490:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 491:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_uint32_t value;
+ 492:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 493:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* get value */
+ 494:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         value = (rt_uint32_t)arg;
+ 495:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* disable interrupt */
+ 496:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         level = rt_hw_interrupt_disable();
+ 649              		.loc 1 496 0
+ 650 000c FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 651              	.LVL87:
+ 652 0010 8046     		mov	r8, r0
+ 653              	.LVL88:
+ 497:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 498:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* resume all waiting thread */
+ 499:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_ipc_list_resume_all(&sem->parent.suspend_thread);
+ 654              		.loc 1 499 0
+ 655 0012 06F11404 		add	r4, r6, #20
+ 656              	.LVL89:
+ 657 0016 0CE0     		b	.L41
+ 658              	.LVL90:
+ 659              	.L42:
+ 660              	.LBB79:
+ 661              	.LBB80:
+ 164:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 662              		.loc 1 164 0
+ 663 0018 FFF7FEFF 		bl	rt_hw_interrupt_disable
+ 664              	.LVL91:
+ 665 001c 0546     		mov	r5, r0
+ 666              	.LVL92:
+ 167:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* set error code to RT_ERROR */
+ 667              		.loc 1 167 0
+ 668 001e 2068     		ldr	r0, [r4]
+ 669              	.LVL93:
+ 169:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 670              		.loc 1 169 0
+ 671 0020 4FF0FF33 		mov	r3, #-1
+ 672 0024 C361     		str	r3, [r0, #28]
+ 176:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 673              		.loc 1 176 0
+ 674 0026 1438     		subs	r0, r0, #20
+ 675              	.LVL94:
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 24
+
+
+ 676 0028 FFF7FEFF 		bl	rt_thread_resume
+ 677              	.LVL95:
+ 179:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 678              		.loc 1 179 0
+ 679 002c 2846     		mov	r0, r5
+ 680 002e FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 681              	.LVL96:
+ 682              	.L41:
+ 683              	.LBB81:
+ 684              	.LBB82:
+ 685              		.loc 2 100 0
+ 686 0032 2368     		ldr	r3, [r4]
+ 687              	.LVL97:
+ 688              	.LBE82:
+ 689              	.LBE81:
+ 161:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     {
+ 690              		.loc 1 161 0
+ 691 0034 9C42     		cmp	r4, r3
+ 692 0036 EFD1     		bne	.L42
+ 693              	.LVL98:
+ 694              	.LBE80:
+ 695              	.LBE79:
+ 500:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 501:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* set new value */
+ 502:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         sem->value = (rt_uint16_t)value;
+ 696              		.loc 1 502 0
+ 697 0038 B783     		strh	r7, [r6, #28]	@ movhi
+ 503:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 504:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         /* enable interrupt */
+ 505:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_hw_interrupt_enable(level);
+ 698              		.loc 1 505 0
+ 699 003a 4046     		mov	r0, r8
+ 700 003c FFF7FEFF 		bl	rt_hw_interrupt_enable
+ 701              	.LVL99:
+ 506:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 507:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         rt_schedule();
+ 702              		.loc 1 507 0
+ 703 0040 FFF7FEFF 		bl	rt_schedule
+ 704              	.LVL100:
+ 508:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 509:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****         return RT_EOK;
+ 705              		.loc 1 509 0
+ 706 0044 0020     		movs	r0, #0
+ 707              	.LBE78:
+ 510:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     }
+ 511:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** 
+ 512:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c ****     return -RT_ERROR;
+ 513:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 708              		.loc 1 513 0
+ 709 0046 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 710              	.LVL101:
+ 711              	.L43:
+ 712              	.LCFI11:
+ 713              		.cfi_def_cfa_offset 0
+ 714              		.cfi_restore 4
+ 715              		.cfi_restore 5
+ 716              		.cfi_restore 6
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 25
+
+
+ 717              		.cfi_restore 7
+ 718              		.cfi_restore 8
+ 719              		.cfi_restore 14
+ 512:Middlewares/Third_Party/RealThread_RTOS_RT-Thread/src/ipc.c **** }
+ 720              		.loc 1 512 0
+ 721 004a 4FF0FF30 		mov	r0, #-1
+ 722              	.LVL102:
+ 723              		.loc 1 513 0
+ 724 004e 7047     		bx	lr
+ 725              		.cfi_endproc
+ 726              	.LFE26:
+ 728              		.text
+ 729              	.Letext0:
+ 730              		.file 3 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtdef.h"
+ 731              		.file 4 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rthw.h"
+ 732              		.file 5 "Middlewares/Third_Party/RealThread_RTOS_RT-Thread/include/rtthread.h"
+ARM GAS  C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s 			page 26
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ipc.c
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:18     .text.rt_sem_init:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:25     .text.rt_sem_init:0000000000000000 rt_sem_init
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:77     .text.rt_sem_detach:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:84     .text.rt_sem_detach:0000000000000000 rt_sem_detach
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:152    .text.rt_sem_create:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:159    .text.rt_sem_create:0000000000000000 rt_sem_create
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:214    .text.rt_sem_delete:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:221    .text.rt_sem_delete:0000000000000000 rt_sem_delete
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:289    .text.rt_sem_take:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:296    .text.rt_sem_take:0000000000000000 rt_sem_take
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:504    .text.rt_sem_trytake:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:511    .text.rt_sem_trytake:0000000000000000 rt_sem_trytake
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:533    .text.rt_sem_release:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:540    .text.rt_sem_release:0000000000000000 rt_sem_release
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:618    .text.rt_sem_control:0000000000000000 $t
+C:\Users\chuti\AppData\Local\Temp\ccTfYKbb.s:625    .text.rt_sem_control:0000000000000000 rt_sem_control
+
+UNDEFINED SYMBOLS
+rt_object_init
+rt_hw_interrupt_disable
+rt_thread_resume
+rt_hw_interrupt_enable
+rt_object_detach
+rt_object_allocate
+rt_object_delete
+rt_thread_self
+rt_thread_suspend
+rt_schedule
+rt_timer_control
+rt_timer_start
